@@ -62,11 +62,11 @@ public class Producto {
         this.id = id;
     }
 
-    public Categoria getCategoria_id() {
+    public Categoria getCategoria() {
         return categoria;
     }
 
-    public void setCategoria_id(Categoria categoria_id) {
+    public void setCategoria(Categoria categoria_id) {
         this.categoria = categoria_id;
     }
 
