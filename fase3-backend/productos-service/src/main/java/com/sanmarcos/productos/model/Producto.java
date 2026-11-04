@@ -28,12 +28,12 @@ public class Producto {
     @Column(nullable = false)
     private Integer stockCritico;
 
-    @Column()
+    @Column(nullable = false)
     private Boolean activo = true;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "categoria_id")
-    private Categoria categoria_id;
+    private Categoria categoria;
 
     public Producto(
             Long id, String codigo,
@@ -49,7 +49,7 @@ public class Producto {
         this.stock = stock;
         this.stockCritico = stockCritico;
         this.activo = activo;
-        this.categoria_id = categoria_id;
+        this.categoria = categoria;
     }
 
     public Producto() {}
@@ -63,11 +63,11 @@ public class Producto {
     }
 
     public Categoria getCategoria_id() {
-        return categoria_id;
+        return categoria;
     }
 
     public void setCategoria_id(Categoria categoria_id) {
-        this.categoria_id = categoria_id;
+        this.categoria = categoria_id;
     }
 
     public Boolean getActivo() {
