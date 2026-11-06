@@ -18,7 +18,9 @@ public class ProductoController {
     public ProductoController(ProductoService servicio) { this.servicio = servicio; }
 
     @GetMapping
-    public List<ProductoResponse> listar() { return servicio.getProductos(); }
+    public List<ProductoResponse> listar(@RequestParam(required = false) Long categoriaId) {
+        return servicio.getProductos(categoriaId);
+    }
 
     @GetMapping("/{id}")
     public ProductoResponse obtener(@PathVariable Long id) { return servicio.getProductoId(id); }
@@ -38,4 +40,13 @@ public class ProductoController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void borrar(@PathVariable Long id) { servicio.deleteProducto(id); }
 
+    @GetMapping("/codigo/{codigo}")
+    public ProductoResponse obtenerPorCodigo(@PathVariable String codigo) {
+        return servicio.getProductoCodigo(codigo);
+    }
+
+    @GetMapping("/stock-critico")
+    public List<ProductoResponse> stockCritico() {
+        return servicio.getStockCritico();
+    }
 }
