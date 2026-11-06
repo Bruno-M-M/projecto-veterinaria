@@ -2,7 +2,6 @@ package com.sanmarcos.productos.controller;
 
 import com.sanmarcos.productos.dto.CategoriaRequest;
 import com.sanmarcos.productos.dto.CategoriaResponse;
-import com.sanmarcos.productos.exception.ConflictoException;
 import com.sanmarcos.productos.service.CategoriaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
