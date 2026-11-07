@@ -1,8 +1,9 @@
 import { CATEGORIAS } from "../data/categorias.js";
 
-const MAX_NOMBRE = 100;
-const MAX_DESCRIPCION = 500;
+const MAX_NOMBRE = 60;
+const MAX_DESCRIPCION = 300;
 const MIN_CODIGO = 3;
+const MAX_CODIGO = 5;
 
 const limpiar = (valor) => String(valor ?? "").trim();
 
@@ -17,6 +18,8 @@ export function validarProducto(datos, productosExistentes = []) {
     const codigo = limpiar(datos.codigo);
     if (codigo.length < MIN_CODIGO) {
         errores.codigo = `El código es requerido y debe tener al menos ${MIN_CODIGO} caracteres.`;
+    } else if (codigo.length > MAX_CODIGO) {
+        errores.codigo = `El código no puede superar los ${MAX_CODIGO} caracteres.`;
     } else if (productosExistentes.some((p) => p.codigo.toUpperCase() === codigo.toUpperCase())) {
         errores.codigo = "Ya existe un producto con ese código.";
     }
@@ -28,7 +31,10 @@ export function validarProducto(datos, productosExistentes = []) {
         errores.nombre = `El nombre no puede superar los ${MAX_NOMBRE} caracteres.`;
     }
 
-    if (limpiar(datos.descripcion).length > MAX_DESCRIPCION) {
+    const descripcion = limpiar(datos.descripcion);
+    if (descripcion === "") {
+        errores.descripcion = "La descripción es requerida.";
+    } else if (descripcion.length > MAX_DESCRIPCION) {
         errores.descripcion = `La descripción no puede superar los ${MAX_DESCRIPCION} caracteres.`;
     }
 
@@ -47,7 +53,9 @@ export function validarProducto(datos, productosExistentes = []) {
     }
 
     const stockCritico = limpiar(datos.stockCritico);
-    if (stockCritico !== "" && !esEnteroNoNegativo(stockCritico)) {
+    if (stockCritico === "") {
+        errores.stockCritico = "El stock crítico es requerido.";
+    } else if (!esEnteroNoNegativo(stockCritico)) {
         errores.stockCritico = "El stock crítico debe ser un número entero mayor o igual a 0.";
     }
 
