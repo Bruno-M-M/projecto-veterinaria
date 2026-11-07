@@ -30,3 +30,24 @@ export function normalizarTexto(texto) {
         .normalize("NFD")
         .replace(/[̀-ͯ]/g, "");
 }
+
+export function aSolicitudProducto(datos, categoriaId) {
+    return {
+        codigo: datos.codigo.trim(),
+        nombre: datos.nombre.trim(),
+        descripcion: datos.descripcion.trim(),
+        precio: Number(datos.precio),
+        stock: Number(datos.stock),
+        stockCritico: Number(datos.stockCritico),
+        activo: datos.activo ?? true,
+        categoriaId,
+    };
+}
+
+export function idDeCategoria(categorias, identificador) {
+    return categorias.find((c) => normalizarTexto(c.nombre) === identificador)?.id;
+}
+
+export function mensajeDeError(error) {
+    return error.response?.data?.mensaje ?? "No se pudo conectar con el servidor.";
+}
