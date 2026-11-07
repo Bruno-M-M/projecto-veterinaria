@@ -1,21 +1,30 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { listarProductos } from "../api/productos.js";
-import { aProductoFrontend } from "../utils/productos.js";
+import {
+    listarProductos,
+    crearProducto,
+    actualizarProducto,
+    eliminarProducto as eliminarProductoApi,
+} from "../api/productos.js";
+import { listarCategorias } from "../api/categorias.js";
+import { aProductoFrontend, aSolicitudProducto, idDeCategoria } from "../utils/productos.js";
 
 const ProductosContext = createContext(null);
 
 export function ProductosProvider({ children }) {
 
     const [productos, setProductos] = useState([]);
+    const [categorias, setCategorias] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState("");
 
     useEffect(() => {
         let activo = true;
 
-        listarProductos()
-            .then((datos) => {
-                if (activo) setProductos(datos.map(aProductoFrontend));
+        Promise.all([listarProductos(), listarCategorias()])
+            .then(([datosProductos, datosCategorias]) => {
+                if (!activo) return;
+                setProductos(datosProductos.map(aProductoFrontend));
+                setCategorias(datosCategorias);
             })
             .catch(() => {
                 if (activo) setError("No se pudieron cargar los productos. Intenta de nuevo más tarde.");
@@ -29,17 +38,26 @@ export function ProductosProvider({ children }) {
         };
     }, []);
 
-    function agregarProducto(producto) {
-        setProductos((actual) => [...actual, producto]);
+    async function agregarProducto(datos) {
+        const categoriaId = idDeCategoria(categorias, datos.categoria);
+        const creado = await crearProducto(aSolicitudProducto(datos, categoriaId));
+        setProductos((actual) => [...actual, aProductoFrontend(creado)]);
     }
 
-    function eliminarProducto(codigo) {
-        setProductos((actual) => actual.filter((p) => p.codigo !== codigo));
+    async function editarProducto(id, datos) {
+        const categoriaId = idDeCategoria(categorias, datos.categoria);
+        const editado = await actualizarProducto(id, aSolicitudProducto(datos, categoriaId));
+        setProductos((actual) => actual.map((p) => (p.id === id ? aProductoFrontend(editado) : p)));
+    }
+
+    async function eliminarProducto(id) {
+        await eliminarProductoApi(id);
+        setProductos((actual) => actual.filter((p) => p.id !== id));
     }
 
     return (
         <ProductosContext.Provider
-            value={{ productos, cargando, error, agregarProducto, eliminarProducto }}
+            value={{ productos, categorias, cargando, error, agregarProducto, editarProducto, eliminarProducto }}
         >
             {children}
         </ProductosContext.Provider>
