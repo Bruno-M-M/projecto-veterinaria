@@ -2,6 +2,20 @@ export function formatoPrecio(valor) {
     return `$${Number(valor).toLocaleString("es-CL")}`;
 }
 
+export function aProductoFrontend(r) {
+    return {
+        id: r.id,
+        codigo: r.codigo,
+        nombre: r.nombre,
+        descripcion: r.descripcion,
+        precio: r.precio,
+        stock: r.stock,
+        stockCritico: r.stockCritico,
+        activo: r.activo,
+        categoria: normalizarTexto(r.categoria),
+    };
+}
+
 export function esStockCritico(producto) {
     const stock = Number(producto.stock);
     const critico = Number(producto.stockCritico);

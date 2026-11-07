@@ -1,20 +1,33 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { ProductosPorDefecto } from "../data/productosPorDefecto.js";
-
-const CLAVE_STORAGE = "productosGuardados";
+import { listarProductos } from "../api/productos.js";
+import { aProductoFrontend } from "../utils/productos.js";
 
 const ProductosContext = createContext(null);
 
 export function ProductosProvider({ children }) {
 
-    const [productos, setProductos] = useState(() => {
-        const guardado = localStorage.getItem(CLAVE_STORAGE);
-        return guardado ? JSON.parse(guardado) : ProductosPorDefecto;
-    });
+    const [productos, setProductos] = useState([]);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
-        localStorage.setItem(CLAVE_STORAGE, JSON.stringify(productos));
-    }, [productos]);
+        let activo = true;
+
+        listarProductos()
+            .then((datos) => {
+                if (activo) setProductos(datos.map(aProductoFrontend));
+            })
+            .catch(() => {
+                if (activo) setError("No se pudieron cargar los productos. Intenta de nuevo más tarde.");
+            })
+            .finally(() => {
+                if (activo) setCargando(false);
+            });
+
+        return () => {
+            activo = false;
+        };
+    }, []);
 
     function agregarProducto(producto) {
         setProductos((actual) => [...actual, producto]);
@@ -25,7 +38,9 @@ export function ProductosProvider({ children }) {
     }
 
     return (
-        <ProductosContext.Provider value={{ productos, agregarProducto, eliminarProducto }}>
+        <ProductosContext.Provider
+            value={{ productos, cargando, error, agregarProducto, eliminarProducto }}
+        >
             {children}
         </ProductosContext.Provider>
     );

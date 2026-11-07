@@ -21,13 +21,24 @@ export function CarritoProvider({ children }) {
             if (existe) {
                 return actual.map((item) =>
                     item.producto === producto.codigo
-                        ? { ...item, cantidad: item.cantidad + cantidad }
+                        ? { ...item, cantidad: limitar(item.cantidad + cantidad, item.stock) }
                         : item
                 );
             }
+
+            const unidades = limitar(cantidad, producto.stock);
+            if (unidades < 1) return actual;
+
             return [
                 ...actual,
-                { producto: producto.codigo, nombre: producto.nombre, precio: producto.precio, cantidad },
+                {
+                    producto: producto.codigo,
+                    productoId: producto.id,
+                    nombre: producto.nombre,
+                    precio: producto.precio,
+                    stock: producto.stock,
+                    cantidad: unidades,
+                },
             ];
         });
     }
@@ -37,11 +48,15 @@ export function CarritoProvider({ children }) {
             actual
                 .map((item) =>
                     item.producto === codigo
-                        ? { ...item, cantidad: item.cantidad + delta }
+                        ? { ...item, cantidad: limitar(item.cantidad + delta, item.stock) }
                         : item
                 )
                 .filter((item) => item.cantidad > 0)
         );
+    }
+
+    function limitar(cantidad, stock) {
+        return Number.isFinite(stock) ? Math.min(cantidad, stock) : cantidad;
     }
 
     function quitarDelCarrito(codigo) {
