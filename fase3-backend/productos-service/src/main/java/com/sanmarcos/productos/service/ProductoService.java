@@ -140,6 +140,33 @@ public class ProductoService {
     public List<ProductoResponse> getStockCritico() {
         return productos.findStockCritico().stream().map(this::productoResponse).toList();
     }
+
+    private Producto getProductoParaActualizar(Long id) {
+        return productos.buscarParaActualizar(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "No existe el producto con id " + id + "."));
+    }
+
+    @Transactional
+    public ProductoResponse descontarStock(Long id, Integer cantidad) {
+        Producto producto = getProductoParaActualizar(id);
+
+        if (producto.getStock() < cantidad) {
+            throw new ConflictoException("Stock insuficiente de " + producto.getNombre()
+                    + ": quedan " + producto.getStock() + " unidades.");
+        }
+
+        producto.setStock(producto.getStock() - cantidad);
+        return productoResponse(productos.save(producto));
+    }
+
+    @Transactional
+    public ProductoResponse reponerStock(Long id, Integer cantidad) {
+        Producto producto = getProductoParaActualizar(id);
+
+        producto.setStock(producto.getStock() + cantidad);
+        return productoResponse(productos.save(producto));
+    }
 }
 
 
