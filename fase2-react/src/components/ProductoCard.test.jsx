@@ -12,7 +12,6 @@ const PRODUCTO = {
     categoria: "antibioticos",
 };
 
-// ProductoCard usa Link, así que necesita un Router (MemoryRouter vive en memoria)
 const renderProductoCard = (alAgregar) =>
     render(
         <MemoryRouter>

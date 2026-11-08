@@ -51,3 +51,19 @@ export function idDeCategoria(categorias, identificador) {
 export function mensajeDeError(error) {
     return error.response?.data?.mensaje ?? "No se pudo conectar con el servidor.";
 }
+
+export function erroresDelServidor(error) {
+    const datos = error.response?.data;
+    const campos = { ...(datos?.errores ?? {}) };
+
+    if (campos.categoriaId) {
+        campos.categoria = campos.categoriaId;
+        delete campos.categoriaId;
+    }
+    if (error.response?.status === 409) {
+        campos.codigo = datos.mensaje;
+    }
+
+    const general = Object.keys(campos).length > 0 ? "" : mensajeDeError(error);
+    return { campos, general };
+}
