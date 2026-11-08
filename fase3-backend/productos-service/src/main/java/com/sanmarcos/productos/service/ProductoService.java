@@ -151,6 +151,11 @@ public class ProductoService {
     public ProductoResponse descontarStock(Long id, Integer cantidad) {
         Producto producto = getProductoParaActualizar(id);
 
+        if (!producto.getActivo()) {
+            throw new ConflictoException("El producto " + producto.getNombre()
+                    + " esta desactivado y no se puede vender.");
+        }
+
         if (producto.getStock() < cantidad) {
             throw new ConflictoException("Stock insuficiente de " + producto.getNombre()
                     + ": quedan " + producto.getStock() + " unidades.");
