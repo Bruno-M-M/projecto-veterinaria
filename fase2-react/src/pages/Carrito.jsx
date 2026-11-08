@@ -51,11 +51,15 @@ function Carrito() {
                                         size="sm"
                                         variant="outline-secondary"
                                         aria-label={`Aumentar cantidad de ${item.nombre}`}
+                                        disabled={item.cantidad >= item.stock}
                                         onClick={() => cambiarCantidad(item.producto, 1)}
                                     >
                                         +
                                     </Button>
                                 </div>
+                                {item.cantidad >= item.stock && (
+                                    <small className="text-muted d-block">Máximo disponible: {item.stock}</small>
+                                )}
                             </td>
                             <td>{formatoPrecio(item.precio * item.cantidad)}</td>
                             <td>
