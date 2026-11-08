@@ -7,7 +7,7 @@ import { useProductos } from "../context/ProductosContext.jsx";
 
 function ContenidoDetalle({ producto }) {
     const { agregarAlCarrito } = useCarrito();
-    const { productos } = useProductos();
+    const { productosActivos } = useProductos();
     const [cantidad, setCantidad] = useState(1);
     const [agregado, setAgregado] = useState(false);
     const sinStock = producto.stock < 1;
@@ -19,7 +19,7 @@ function ContenidoDetalle({ producto }) {
         };
     }, [producto.nombre]);
 
-    const recomendados = productos
+    const recomendados = productosActivos
         .filter((p) => p.categoria === producto.categoria && p.codigo !== producto.codigo)
         .slice(0, 3);
 
@@ -92,8 +92,8 @@ function ContenidoDetalle({ producto }) {
 
 function DetalleProducto() {
     const { codigo } = useParams();
-    const { productos, cargando, error } = useProductos();
-    const producto = productos.find((p) => p.codigo === codigo);
+    const { productosActivos, cargando, error } = useProductos();
+    const producto = productosActivos.find((p) => p.codigo === codigo);
 
     return (
         <section id="detalle-producto">

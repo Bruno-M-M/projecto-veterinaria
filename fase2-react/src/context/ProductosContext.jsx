@@ -55,9 +55,11 @@ export function ProductosProvider({ children }) {
         setProductos((actual) => actual.filter((p) => p.id !== id));
     }
 
+    const productosActivos = productos.filter((p) => p.activo !== false);
+
     return (
         <ProductosContext.Provider
-            value={{ productos, categorias, cargando, error, agregarProducto, editarProducto, eliminarProducto }}
+            value={{ productos, productosActivos, categorias, cargando, error, agregarProducto, editarProducto, eliminarProducto }}
         >
             {children}
         </ProductosContext.Provider>
