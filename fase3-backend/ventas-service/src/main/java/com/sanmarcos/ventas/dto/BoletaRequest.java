@@ -1,25 +1,25 @@
 package com.sanmarcos.ventas.dto;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class BoletaRequest {
 
+    // TEMPORAL: cuando exista el token de Benjamín, este campo se borra
+    // y el usuario se toma del token.
     @NotNull(message = "El ID del usuario es obligatorio")
     private Integer usuarioId;
 
-    @NotNull(message = "El total es obligatorio")
-    @Positive(message = "El total debe ser un valor positivo")
-    private Double total;
-
-    @NotNull(message = "El estado es obligatorio")
-    private Boolean estado;
+    @NotEmpty(message = "La compra debe tener al menos un producto")
+    @Valid
+    private List<ItemBoletaRequest> items;
 }

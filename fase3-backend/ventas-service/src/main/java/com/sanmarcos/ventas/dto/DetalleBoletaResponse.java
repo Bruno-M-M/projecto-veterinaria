@@ -10,9 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DetalleBoletaResponse {
-
     private Integer id;
-    private Integer boletaId;
     private Integer productoId;
     private Integer cantidad;
     private Double precioUnitario;
