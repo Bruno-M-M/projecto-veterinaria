@@ -38,7 +38,7 @@ const FORMULARIO_EDITADO = {
 };
 
 function Sonda() {
-    const { productos, categorias, cargando, error, agregarProducto, editarProducto, eliminarProducto } = useProductos();
+    const { productos, productosActivos, categorias, cargando, error, agregarProducto, editarProducto, eliminarProducto } = useProductos();
     const [fallo, setFallo] = useState("");
 
     async function intentar(accion) {
@@ -59,6 +59,7 @@ function Sonda() {
             <span data-testid="categorias-api">{categorias.length}</span>
             <span data-testid="categorias">{productos.map((p) => p.categoria).join(",")}</span>
             <span data-testid="ids">{productos.map((p) => p.id).join(",")}</span>
+            <span data-testid="activos">{productosActivos.map((p) => p.codigo).join(",")}</span>
             <span data-testid="nombres">{productos.map((p) => p.nombre).join(",")}</span>
             <button onClick={() => intentar(() => agregarProducto(FORMULARIO_NUEVO))}>agregar</button>
             <button onClick={() => intentar(() => editarProducto(1, FORMULARIO_EDITADO))}>editar</button>
@@ -219,6 +220,44 @@ describe("ProductosContext", () => {
             await clic("eliminar");
             await waitFor(() => expect(ver("fallo")).toBe("No existe el producto con id 1."));
             expect(ver("ids")).toBe("1,16");
+        });
+    });
+
+    describe("productosActivos", () => {
+        const DESACTIVADO = { id: 99, codigo: "ZZ099", nombre: "Producto desactivado", descripcion: "x", precio: 100, stock: 1, stockCritico: 1, activo: false, categoriaId: 1, categoria: "Antibióticos" };
+
+        test("deja fuera los productos desactivados, pero productos los conserva todos", async () => {
+            api.listarProductos.mockResolvedValue([...RESPUESTA, DESACTIVADO]);
+            montar();
+            await esperarCarga();
+            expect(ver("cantidad")).toBe("3");
+            expect(ver("activos")).toBe("ME001,ME016");
+        });
+
+        test("un producto que no trae el campo activo se considera activo", async () => {
+            const { activo, ...sinCampo } = RESPUESTA[0];
+            api.listarProductos.mockResolvedValue([sinCampo]);
+            montar();
+            await esperarCarga();
+            expect(ver("activos")).toBe("ME001");
+        });
+
+        test("si todos están desactivados la lista de activos queda vacía", async () => {
+            api.listarProductos.mockResolvedValue([DESACTIVADO]);
+            montar();
+            await esperarCarga();
+            expect(ver("cantidad")).toBe("1");
+            expect(ver("activos")).toBe("");
+        });
+
+        test("un producto desactivado que se edita para activarlo pasa a la lista de activos", async () => {
+            api.listarProductos.mockResolvedValue([{ ...RESPUESTA[0], activo: false }, RESPUESTA[1]]);
+            api.actualizarProducto.mockResolvedValue({ ...RESPUESTA[0], activo: true });
+            montar();
+            await esperarCarga();
+            expect(ver("activos")).toBe("ME016");
+            await clic("editar");
+            await waitFor(() => expect(ver("activos")).toBe("ME001,ME016"));
         });
     });
 
