@@ -59,7 +59,8 @@ export function ProductosProvider({ children }) {
 
     return (
         <ProductosContext.Provider
-            value={{ productos, productosActivos, categorias, cargando, error, agregarProducto, editarProducto, eliminarProducto }}        >
+            value={{ productos, productosActivos, categorias, cargando, error, agregarProducto, editarProducto, eliminarProducto }}
+        >
             {children}
         </ProductosContext.Provider>
     );
