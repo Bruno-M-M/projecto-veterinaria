@@ -18,6 +18,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 import AdminComentarios from "./pages/admin/AdminComentarios.jsx";
 import AdminProductos from "./pages/admin/AdminProductos.jsx";
 import NuevoProducto from "./pages/admin/NuevoProducto.jsx";
+import EditarProducto from "./pages/admin/EditarProducto.jsx";
 import Usuarios from "./pages/admin/Usuarios.jsx";
 
 // Páginas que aún no se migran
@@ -60,6 +61,7 @@ function App() {
                     <Route path="comentarios" element={<AdminComentarios />} />
                     <Route path="productos" element={<AdminProductos />} />
                     <Route path="productos/nuevo" element={<NuevoProducto />} />
+                    <Route path="productos/:codigo/editar" element={<EditarProducto />} />
                     <Route path="usuarios" element={<Usuarios />} />
                 </Route>
             </Routes>

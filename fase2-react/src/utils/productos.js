@@ -67,3 +67,16 @@ export function erroresDelServidor(error) {
     const general = Object.keys(campos).length > 0 ? "" : mensajeDeError(error);
     return { campos, general };
 }
+
+export function aFormulario(producto) {
+    return {
+        codigo: producto.codigo,
+        nombre: producto.nombre,
+        descripcion: producto.descripcion,
+        precio: String(producto.precio),
+        stock: String(producto.stock),
+        stockCritico: String(producto.stockCritico),
+        categoria: producto.categoria,
+        activo: producto.activo,
+    };
+}
