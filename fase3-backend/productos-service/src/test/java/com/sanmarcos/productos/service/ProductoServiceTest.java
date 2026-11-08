@@ -15,6 +15,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,6 +69,42 @@ public class ProductoServiceTest {
         when(productos.buscarParaActualizar(99L)).thenReturn(Optional.empty());
 
         assertThrows(RecursoNoEncontradoException.class, () -> servicio.descontarStock(99L, 1));
+    }
+
+    @Test
+    void descontarStock_conProductoDesactivado_lanzaConflictoYNoCambiaElStock() {
+        Producto p = productoConStock(10);
+        p.setActivo(false);
+        when(productos.buscarParaActualizar(1L)).thenReturn(Optional.of(p));
+
+        ConflictoException error = assertThrows(ConflictoException.class, () -> servicio.descontarStock(1L, 3));
+
+        assertTrue(error.getMessage().contains("desactivado"));
+        assertEquals(10, p.getStock());
+        verify(productos, never()).save(any());
+    }
+
+    @Test
+    void descontarStock_conProductoDesactivadoYSinStock_avisaQueEstaDesactivado() {
+        Producto p = productoConStock(0);
+        p.setActivo(false);
+        when(productos.buscarParaActualizar(1L)).thenReturn(Optional.of(p));
+
+        ConflictoException error = assertThrows(ConflictoException.class, () -> servicio.descontarStock(1L, 1));
+
+        assertTrue(error.getMessage().contains("desactivado"));
+    }
+
+    @Test
+    void reponerStock_conProductoDesactivado_igualAumentaElStock() {
+        Producto p = productoConStock(5);
+        p.setActivo(false);
+        when(productos.buscarParaActualizar(1L)).thenReturn(Optional.of(p));
+        when(productos.save(p)).thenReturn(p);
+
+        ProductoResponse respuesta = servicio.reponerStock(1L, 4);
+
+        assertEquals(9, respuesta.getStock());
     }
 
     @Test

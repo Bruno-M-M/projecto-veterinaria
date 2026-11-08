@@ -61,7 +61,7 @@ public class ProductoController {
         return servicio.getStockCritico();
     }
 
-    @Operation(summary = "Descuenta del stock la cantidad comprada (409 si no alcanza)")
+    @Operation(summary = "Descuenta del stock la cantidad comprada (409 si no alcanza o el producto esta desactivado)")
     @PostMapping("/{id}/descontar")
     public ProductoResponse descontar(@PathVariable Long id, @Valid @RequestBody CantidadRequest request) {
         return servicio.descontarStock(id, request.getCantidad());

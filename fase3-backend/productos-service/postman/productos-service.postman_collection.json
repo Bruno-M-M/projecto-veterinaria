@@ -1301,6 +1301,192 @@
           }
         },
         {
+          "name": "Desactivar el producto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const cuerpo = pm.response.json();",
+                  "pm.test(\"Quedó desactivado y con el mismo stock\", () => { pm.expect(cuerpo.activo).to.be.false; pm.expect(cuerpo.stock).to.eql(12); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/productos/{{productoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "productos",
+                "{{productoId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigoPrueba}}\",\n  \"nombre\": \"Producto editado Postman\",\n  \"descripcion\": \"Creado por la coleccion de Postman\",\n  \"precio\": 2500,\n  \"stock\": 12,\n  \"stockCritico\": 2,\n  \"activo\": false,\n  \"categoriaId\": {{categoriaId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Descontar de un producto desactivado (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "const cuerpo = pm.response.json();",
+                  "pm.test(\"El mensaje incluye 'desactivado'\", () => pm.expect(cuerpo.mensaje).to.include(\"desactivado\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/productos/{{productoId}}/descontar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "productos",
+                "{{productoId}}",
+                "descontar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cantidad\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Reponer en un producto desactivado sí funciona",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const cuerpo = pm.response.json();",
+                  "pm.test(\"El stock subió de 12 a 13 y sigue desactivado\", () => { pm.expect(cuerpo.stock).to.eql(13); pm.expect(cuerpo.activo).to.be.false; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/productos/{{productoId}}/reponer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "productos",
+                "{{productoId}}",
+                "reponer"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cantidad\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Volver a activar el producto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const cuerpo = pm.response.json();",
+                  "pm.test(\"Quedó activo\", () => pm.expect(cuerpo.activo).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/productos/{{productoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "productos",
+                "{{productoId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"{{codigoPrueba}}\",\n  \"nombre\": \"Producto editado Postman\",\n  \"descripcion\": \"Creado por la coleccion de Postman\",\n  \"precio\": 2500,\n  \"stock\": 13,\n  \"stockCritico\": 2,\n  \"activo\": true,\n  \"categoriaId\": {{categoriaId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
           "name": "Dejar el producto en stock crítico",
           "event": [
             {
@@ -1338,7 +1524,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"cantidad\": 10\n}",
+              "raw": "{\n  \"cantidad\": 11\n}",
               "options": {
                 "raw": {
                   "language": "json"
