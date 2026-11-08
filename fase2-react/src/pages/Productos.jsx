@@ -7,12 +7,12 @@ import { CATEGORIAS } from "../data/categorias.js";
 function Productos() {
     const [categoria, setCategoria] = useState("todas");
     const { agregarAlCarrito } = useCarrito();
-    const { productos, cargando, error } = useProductos();
+    const { productosActivos, cargando, error } = useProductos();
 
     const productosAMostrar =
         categoria === "todas"
-        ? productos
-        : productos.filter((p) => p.categoria === categoria);
+        ? productosActivos
+        : productosActivos.filter((p) => p.categoria === categoria);
 
     if (cargando) return <p className="aviso-no-encontrado">Cargando productos...</p>;
     if (error) return <p className="aviso-no-encontrado">{error}</p>;
