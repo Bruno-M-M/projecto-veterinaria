@@ -86,8 +86,8 @@ Con el servicio en marcha, Swagger queda en `http://localhost:8081/swagger-ui.ht
 | `POST /api/v1/productos` | Crea un producto |
 | `PUT /api/v1/productos/{id}` | Edita un producto |
 | `DELETE /api/v1/productos/{id}` | Elimina un producto |
-| `POST /api/v1/productos/{id}/descontar` | Resta stock (409 si no alcanza) |
-| `POST /api/v1/productos/{id}/reponer` | Suma stock |
+| `POST /api/v1/productos/{id}/descontar` | Resta stock (409 si no alcanza o el producto está desactivado) |
+| `POST /api/v1/productos/{id}/reponer` | Suma stock (también en productos desactivados, para devolver el de una boleta anulada) |
 
 Los errores salen siempre con el mismo formato: `fecha`, `estado`, `error`, `mensaje`, `ruta` y, en los 400 de validación, `errores` con el detalle por campo.
 
@@ -102,16 +102,16 @@ npm run dev
 
 La aplicación queda en `http://localhost:5173`. En desarrollo, Vite reenvía las rutas `/api/v1/...` a cada servicio (productos al 8081, auth al 8082 y boletas al 8083), así que no hace falta configurar CORS. La variable `VITE_API_URL` (ver `.env.example`) se deja vacía en desarrollo.
 
-El catálogo y el panel de administración necesitan `productos-service` en marcha. Mientras la sesión con JWT no esté integrada, el panel (`/admin`) se protege con una bandera local heredada de la versión anterior.
+El catálogo y el panel de administración necesitan `productos-service` en marcha. La tienda solo muestra los productos activos; el panel los ve todos. Mientras la sesión con JWT no esté integrada, el panel (`/admin`) se protege con una bandera local heredada de la versión anterior.
 
 ## Pruebas
 
 | Qué | Comando (desde la carpeta indicada) | Resultado actual |
 |---|---|---|
-| Backend, JUnit y MockMvc (`fase3-backend/productos-service`) | `./mvnw test` | 13 pruebas, sin necesidad de Oracle |
-| Frontend, Vitest y Testing Library (`fase2-react`) | `npm run test:run` | 190 pruebas en 21 archivos |
+| Backend, JUnit y MockMvc (`fase3-backend/productos-service`) | `./mvnw test` | 16 pruebas, sin necesidad de Oracle |
+| Frontend, Vitest y Testing Library (`fase2-react`) | `npm run test:run` | 211 pruebas en 23 archivos |
 | Cobertura del frontend (`fase2-react`) | `npm run test:coverage` | Falla si alguna métrica baja del 90 % |
-| Colección de Postman (`fase3-backend/productos-service/postman`) | `npx newman run productos-service.postman_collection.json` | 38 peticiones y 73 comprobaciones |
+| Colección de Postman (`fase3-backend/productos-service/postman`) | `npx newman run productos-service.postman_collection.json` | 42 peticiones y 81 comprobaciones |
 
 La colección de Postman se puede importar también en la aplicación. Crea y elimina sus propios datos de prueba, y la variable `baseUrl` permite apuntarla a otro servidor.
 
