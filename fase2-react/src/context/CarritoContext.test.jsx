@@ -124,4 +124,60 @@ describe("CarritoContext", () => {
         expect(ver("lineas")).toBe("2");
         expect(ver("total")).toBe("15200");
     });
+
+    const BRAVECTO = { id: 5, codigo: "ME005", nombre: "Bravecto", precio: 18900, stock: 4 };
+const AGOTADO = { id: 21, codigo: "ME021", nombre: "Omega vet 3-6-9", precio: 9900, stock: 0 };
+
+function SondaStock() {
+    const { carrito, agregarAlCarrito, cambiarCantidad } = useCarrito();
+    return (
+        <div>
+            <span data-testid="unidades">{carrito.find((i) => i.producto === "ME005")?.cantidad ?? 0}</span>
+            <span data-testid="lineas">{carrito.length}</span>
+            <span data-testid="linea">{JSON.stringify(carrito[0] ?? null)}</span>
+            <button onClick={() => agregarAlCarrito(BRAVECTO)}>agregar bravecto</button>
+            <button onClick={() => agregarAlCarrito(BRAVECTO, 10)}>agregar diez</button>
+            <button onClick={() => cambiarCantidad("ME005", 1)}>sumar bravecto</button>
+            <button onClick={() => agregarAlCarrito(AGOTADO)}>agregar agotado</button>
+        </div>
+    );
+}
+
+describe("CarritoContext y el stock disponible", () => {
+    beforeEach(() => localStorage.clear());
+    const montarStock = () => render(<CarritoProvider><SondaStock /></CarritoProvider>);
+
+    test("agregar más unidades que el stock deja solo el stock", async () => {
+        montarStock();
+        await clic("agregar diez");
+        expect(ver("unidades")).toBe("4");
+    });
+
+    test("agregar de a una no pasa del stock", async () => {
+        montarStock();
+        for (let i = 0; i < 6; i++) await clic("agregar bravecto");
+        expect(ver("unidades")).toBe("4");
+    });
+
+    test("sumar en el carrito no pasa del stock", async () => {
+        montarStock();
+        await clic("agregar diez");
+        await clic("sumar bravecto");
+        expect(ver("unidades")).toBe("4");
+    });
+
+    test("un producto sin stock no entra al carrito", async () => {
+        montarStock();
+        await clic("agregar agotado");
+        expect(ver("lineas")).toBe("0");
+    });
+
+    test("la línea guarda el id del producto y su stock", async () => {
+        montarStock();
+        await clic("agregar bravecto");
+        const linea = JSON.parse(ver("linea"));
+        expect(linea.productoId).toBe(5);
+        expect(linea.stock).toBe(4);
+    });
+});
 });

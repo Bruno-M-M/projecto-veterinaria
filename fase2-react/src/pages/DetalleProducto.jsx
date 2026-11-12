@@ -7,9 +7,10 @@ import { useProductos } from "../context/ProductosContext.jsx";
 
 function ContenidoDetalle({ producto }) {
     const { agregarAlCarrito } = useCarrito();
-    const { productos } = useProductos();
+    const { productosActivos } = useProductos();
     const [cantidad, setCantidad] = useState(1);
     const [agregado, setAgregado] = useState(false);
+    const sinStock = producto.stock < 1;
 
     useEffect(() => {
         document.title = `${producto.nombre} - Veterinaria San Marcos`;
@@ -18,7 +19,7 @@ function ContenidoDetalle({ producto }) {
         };
     }, [producto.nombre]);
 
-    const recomendados = productos
+    const recomendados = productosActivos
         .filter((p) => p.categoria === producto.categoria && p.codigo !== producto.codigo)
         .slice(0, 3);
 
@@ -53,15 +54,16 @@ function ContenidoDetalle({ producto }) {
                         <Button
                             size="sm"
                             variant="outline-secondary"
-                            onClick={() => setCantidad((c) => c + 1)}
+                            disabled={cantidad >= producto.stock}
+                            onClick={() => setCantidad((c) => Math.min(producto.stock, c + 1))}
                         >
                             +
                         </Button>
                     </div>
                 </div>
 
-                <Button variant="success" disabled={agregado} onClick={manejarAgregar}>
-                    {agregado ? "Agregado" : "Agregar al carrito"}
+                <Button variant="success" disabled={agregado || sinStock} onClick={manejarAgregar}>
+                    {sinStock ? "Sin stock" : agregado ? "Agregado" : "Agregar al carrito"}
                 </Button>
             </div>
 
@@ -90,8 +92,8 @@ function ContenidoDetalle({ producto }) {
 
 function DetalleProducto() {
     const { codigo } = useParams();
-    const { productos } = useProductos();
-    const producto = productos.find((p) => p.codigo === codigo);
+    const { productosActivos, cargando, error } = useProductos();
+    const producto = productosActivos.find((p) => p.codigo === codigo);
 
     return (
         <section id="detalle-producto">
@@ -99,7 +101,11 @@ function DetalleProducto() {
                 <Link to="/productos">&larr; Volver a productos</Link>
             </p>
 
-            {producto ? (
+            {cargando ? (
+                <p className="aviso-no-encontrado">Cargando producto...</p>
+            ) : error ? (
+                <p className="aviso-no-encontrado">{error}</p>
+            ) : producto ? (
                 // key={codigo}: al pasar a otro producto desde "Te puede interesar" el estado
                 // (cantidad, "Agregado") se reinicia, como pasaba al recargar la pagina en el HTML.
                 <ContenidoDetalle key={producto.codigo} producto={producto} />

@@ -1,31 +1,66 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { ProductosPorDefecto } from "../data/productosPorDefecto.js";
-
-const CLAVE_STORAGE = "productosGuardados";
+import {
+    listarProductos,
+    crearProducto,
+    actualizarProducto,
+    eliminarProducto as eliminarProductoApi,
+} from "../api/productos.js";
+import { listarCategorias } from "../api/categorias.js";
+import { aProductoFrontend, aSolicitudProducto, idDeCategoria } from "../utils/productos.js";
 
 const ProductosContext = createContext(null);
 
 export function ProductosProvider({ children }) {
 
-    const [productos, setProductos] = useState(() => {
-        const guardado = localStorage.getItem(CLAVE_STORAGE);
-        return guardado ? JSON.parse(guardado) : ProductosPorDefecto;
-    });
+    const [productos, setProductos] = useState([]);
+    const [categorias, setCategorias] = useState([]);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
-        localStorage.setItem(CLAVE_STORAGE, JSON.stringify(productos));
-    }, [productos]);
+        let activo = true;
 
-    function agregarProducto(producto) {
-        setProductos((actual) => [...actual, producto]);
+        Promise.all([listarProductos(), listarCategorias()])
+            .then(([datosProductos, datosCategorias]) => {
+                if (!activo) return;
+                setProductos(datosProductos.map(aProductoFrontend));
+                setCategorias(datosCategorias);
+            })
+            .catch(() => {
+                if (activo) setError("No se pudieron cargar los productos. Intenta de nuevo más tarde.");
+            })
+            .finally(() => {
+                if (activo) setCargando(false);
+            });
+
+        return () => {
+            activo = false;
+        };
+    }, []);
+
+    async function agregarProducto(datos) {
+        const categoriaId = idDeCategoria(categorias, datos.categoria);
+        const creado = await crearProducto(aSolicitudProducto(datos, categoriaId));
+        setProductos((actual) => [...actual, aProductoFrontend(creado)]);
     }
 
-    function eliminarProducto(codigo) {
-        setProductos((actual) => actual.filter((p) => p.codigo !== codigo));
+    async function editarProducto(id, datos) {
+        const categoriaId = idDeCategoria(categorias, datos.categoria);
+        const editado = await actualizarProducto(id, aSolicitudProducto(datos, categoriaId));
+        setProductos((actual) => actual.map((p) => (p.id === id ? aProductoFrontend(editado) : p)));
     }
+
+    async function eliminarProducto(id) {
+        await eliminarProductoApi(id);
+        setProductos((actual) => actual.filter((p) => p.id !== id));
+    }
+
+    const productosActivos = productos.filter((p) => p.activo !== false);
 
     return (
-        <ProductosContext.Provider value={{ productos, agregarProducto, eliminarProducto }}>
+        <ProductosContext.Provider
+            value={{ productos, productosActivos, categorias, cargando, error, agregarProducto, editarProducto, eliminarProducto }}
+        >
             {children}
         </ProductosContext.Provider>
     );

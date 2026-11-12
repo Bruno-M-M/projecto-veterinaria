@@ -5,7 +5,7 @@ import jakarta.validation.constraints.*;
 public class ProductoRequest {
 
     @NotBlank(message = "El codigo es obligatorio.")
-    @Size(max = 5)
+    @Size(max = 5, message = "El codigo no puede superar los 5 caracteres.")
     private String codigo;
 
     @NotBlank(message = "El nombre es obligatorio.")

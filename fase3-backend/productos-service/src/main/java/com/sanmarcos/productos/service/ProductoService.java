@@ -39,14 +39,6 @@ public class ProductoService {
         this.categorias = categorias;
     }
 
-    @Transactional(readOnly = true)
-    public List<ProductoResponse> getProductos() {
-        return productos.findAll()
-                .stream()
-                .map(this::productoResponse)
-                .toList();
-    }
-
     private Producto getProductoById(Long id) {
         return productos.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException(
@@ -125,6 +117,61 @@ public class ProductoService {
         productos.delete(getProductoById(id));
     }
 
+    @Transactional(readOnly = true)
+    public List<ProductoResponse> getProductos(Long categoriaId) {
+        List<Producto> lista;
+        if (categoriaId == null) {
+            lista = productos.findAll();
+        } else {
+            getCategoriaById(categoriaId);   // 404 si la categoría no existe
+            lista = productos.findByCategoriaId(categoriaId);
+        }
+        return lista.stream().map(this::productoResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ProductoResponse getProductoCodigo(String codigo) {
+        return productoResponse(productos.findByCodigo(codigo.trim())
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "No existe el producto con codigo " + codigo + ".")));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductoResponse> getStockCritico() {
+        return productos.findStockCritico().stream().map(this::productoResponse).toList();
+    }
+
+    private Producto getProductoParaActualizar(Long id) {
+        return productos.buscarParaActualizar(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "No existe el producto con id " + id + "."));
+    }
+
+    @Transactional
+    public ProductoResponse descontarStock(Long id, Integer cantidad) {
+        Producto producto = getProductoParaActualizar(id);
+
+        if (!producto.getActivo()) {
+            throw new ConflictoException("El producto " + producto.getNombre()
+                    + " esta desactivado y no se puede vender.");
+        }
+
+        if (producto.getStock() < cantidad) {
+            throw new ConflictoException("Stock insuficiente de " + producto.getNombre()
+                    + ": quedan " + producto.getStock() + " unidades.");
+        }
+
+        producto.setStock(producto.getStock() - cantidad);
+        return productoResponse(productos.save(producto));
+    }
+
+    @Transactional
+    public ProductoResponse reponerStock(Long id, Integer cantidad) {
+        Producto producto = getProductoParaActualizar(id);
+
+        producto.setStock(producto.getStock() + cantidad);
+        return productoResponse(productos.save(producto));
+    }
 }
 
 

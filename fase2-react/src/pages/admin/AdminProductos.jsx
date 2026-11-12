@@ -1,15 +1,23 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Container, Table, Button, Badge } from "react-bootstrap";
+import { Container, Table, Button, Badge, Alert } from "react-bootstrap";
 import { useProductos } from "../../context/ProductosContext.jsx";
 import { nombreCategoria } from "../../data/categorias.js";
-import { esStockCritico, formatoPrecio } from "../../utils/productos.js";
+import { esStockCritico, formatoPrecio, mensajeDeError } from "../../utils/productos.js";
 
 function AdminProductos() {
-    const { productos, eliminarProducto } = useProductos();
+    const { productos, cargando, error, eliminarProducto } = useProductos();
+    const [errorEliminar, setErrorEliminar] = useState("");
 
-    function confirmarEliminar(producto) {
-        if (window.confirm(`¿Eliminar "${producto.nombre}"? Esta acción no se puede deshacer.`)) {
-            eliminarProducto(producto.codigo);
+    async function confirmarEliminar(producto) {
+        if (!window.confirm(`¿Eliminar "${producto.nombre}"? Esta acción no se puede deshacer.`)) {
+            return;
+        }
+        setErrorEliminar("");
+        try {
+            await eliminarProducto(producto.id);
+        } catch (e) {
+            setErrorEliminar(mensajeDeError(e));
         }
     }
 
@@ -20,7 +28,17 @@ function AdminProductos() {
                 <Button as={Link} to="/admin/productos/nuevo" variant="success">+ Nuevo producto</Button>
             </div>
 
-            {productos.length === 0 ? (
+            {errorEliminar && (
+                <Alert variant="danger" dismissible onClose={() => setErrorEliminar("")}>
+                    {errorEliminar}
+                </Alert>
+            )}
+
+            {cargando ? (
+                <p className="text-muted">Cargando productos...</p>
+            ) : error ? (
+                <p className="text-muted">{error}</p>
+            ) : productos.length === 0 ? (
                 <p className="text-muted">No hay productos registrados.</p>
             ) : (
                 <Table responsive striped className="align-middle">
@@ -48,14 +66,25 @@ function AdminProductos() {
                                     )}
                                 </td>
                                 <td>
-                                    <Button
-                                        size="sm"
-                                        variant="outline-danger"
-                                        aria-label={`Eliminar ${producto.nombre}`}
-                                        onClick={() => confirmarEliminar(producto)}
-                                    >
-                                        Eliminar
-                                    </Button>
+                                    <div className="d-flex gap-2">
+                                        <Button
+                                            as={Link}
+                                            to={`/admin/productos/${producto.codigo}/editar`}
+                                            size="sm"
+                                            variant="outline-primary"
+                                            aria-label={`Editar ${producto.nombre}`}
+                                        >
+                                            Editar
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline-danger"
+                                            aria-label={`Eliminar ${producto.nombre}`}
+                                            onClick={() => confirmarEliminar(producto)}
+                                        >
+                                            Eliminar
+                                        </Button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
