@@ -7,6 +7,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -42,6 +43,13 @@ public class ManejadorExcepciones {
                                                          HttpServletRequest req) {
         return responder(HttpStatus.BAD_REQUEST,
                 "El cuerpo de la petición no es un JSON válido.", req, null);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorRespuesta> tipoIncorrecto(MethodArgumentTypeMismatchException ex,
+                                                         HttpServletRequest req) {
+        return responder(HttpStatus.BAD_REQUEST,
+                "El valor de '" + ex.getName() + "' no es válido.", req, null);
     }
 
     private ResponseEntity<ErrorRespuesta> responder(HttpStatus estado,

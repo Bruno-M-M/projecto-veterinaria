@@ -8,8 +8,6 @@ function correoValido(correo) {
     return partes.length === 2 && partes[0] !== "" && Dominios_permitidos.includes(partes[1]);
 }
 
-// Recibe por props una función "onEnviar" que Home le pasa.
-// El formulario valida y, si todo está bien, llama a onEnviar con los datos.
 function FormularioComentario({ onEnviar }) {
     const [form, setForm] = useState({ nombre: "", correo: "", comentario: "" });
     const [intento, setIntento] = useState(false);

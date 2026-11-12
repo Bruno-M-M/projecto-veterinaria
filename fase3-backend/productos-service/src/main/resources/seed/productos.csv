@@ -1,0 +1,23 @@
+codigo|categoria|nombre|descripcion|precio|stock|stockCritico
+ME001|Antibióticos|Amoxibay 250mg|Amoxicilina — Blíster de 10 comprimidos. Para perro y gato. Stock disponible: 45 unidades.|4200|45|10
+ME002|Antibióticos|Enrox 50mg|Enrofloxacino — Blíster de 10 comprimidos. Para perro y gato. Stock disponible: 30 unidades.|6800|30|8
+ME003|Antibióticos|Metrobay 250mg|Metronidazol — Blíster de 10 comprimidos. Para perro y gato. Stock disponible: 28 unidades.|3900|28|8
+ME004|Antiparasitarios|Nexgard|Afoxolaner — Masticable, 1 unidad. Para perro. Stock disponible: 60 unidades.|9500|60|15
+ME005|Antiparasitarios|Bravecto|Fluralaner — Masticable, 1 unidad. Para perro. Stock disponible: 40 unidades.|18900|4|10
+ME006|Antiparasitarios|Revolution Plus|Selamectina + Sarolaner — Pipeta, 1 unidad. Para gato. Stock disponible: 35 unidades.|14500|35|8
+ME007|Antiparasitarios|Drontal Plus|Praziquantel + Pamoato — Comprimido, 1 unidad. Para perro. Stock disponible: 80 unidades.|3200|80|15
+ME008|Antiparasitarios|Milbemax Gato|Milbemicina + Praziquantel — Comprimido, 2 unidades. Para gato. Stock disponible: 50 unidades.|6800|50|10
+ME009|Antiinflamatorios|Meloxicam 1mg|Meloxicam — Blíster de 10 comprimidos. Para perro y gato. Stock disponible: 55 unidades.|4500|55|12
+ME010|Antiinflamatorios|Carprofen 50mg|Carprofeno — Blíster de 10 comprimidos. Para perro. Stock disponible: 30 unidades.|9800|30|8
+ME011|Dermatología|Clorhexidina shampoo|Clorhexidina 2% — Frasco de 250ml. Para perro y gato. Stock disponible: 25 unidades.|8900|25|6
+ME012|Dermatología|Malaseb shampoo|Miconazol + Clorhexidina — Frasco de 250ml. Para perro y gato. Stock disponible: 20 unidades.|12500|20|5
+ME013|Dermatología|Apoquel 16mg|Oclacitinib — Blíster de 10 comprimidos. Para perro. Stock disponible: 18 unidades.|22000|18|5
+ME014|Digestivo|Probifor|Bacillus clausii — Sobres de 5ml, caja de 10. Para perro y gato. Stock disponible: 40 unidades.|5600|40|10
+ME015|Digestivo|Omeprazol 10mg vet|Omeprazol — Blíster de 10 comprimidos. Para perro y gato. Stock disponible: 35 unidades.|3800|35|8
+ME016|Cardíaco|Vetmedin 2.5mg|Pimobendan — Blíster de 10 comprimidos. Para perro. Stock disponible: 15 unidades.|28000|15|5
+ME017|Analgésicos|Tramadol 50mg vet|Tramadol — Blíster de 10 comprimidos. Para perro. Stock disponible: 22 unidades.|5200|22|6
+ME018|Vacunas|Nobivac DHPPi|Vacuna polivalente — Vial, 1 dosis. Para perro. Stock disponible: 48 unidades.|8500|48|10
+ME019|Vacunas|Nobivac Rabies|Vacuna antirrábica — Vial, 1 dosis. Para perro y gato. Stock disponible: 60 unidades.|5800|6|15
+ME020|Vacunas|Felocell CVR|Vacuna triple felina — Vial, 1 dosis. Para gato. Stock disponible: 36 unidades.|7200|36|8
+ME021|Suplementos|Omega vet 3-6-9|Ácidos grasos omega — Frasco de 100ml. Para perro y gato. Stock disponible: 30 unidades.|9900|3|8
+ME022|Suplementos|Condrovet forte|Condroitina + Glucosamina — Blíster de 30 comprimidos. Para perro. Stock disponible: 25 unidades.|14500|25|6
