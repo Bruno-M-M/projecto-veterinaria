@@ -20,15 +20,23 @@ describe("validarProducto", () => {
         expect(validarProducto(VALIDO, EXISTENTES)).toEqual({});
     });
 
-    test("con todos los campos vacíos marca los cinco obligatorios", () => {
+    test("con todos los campos vacíos marca los siete obligatorios", () => {
         const vacio = { codigo: "", nombre: "", descripcion: "", precio: "", stock: "", stockCritico: "", categoria: "" };
         expect(Object.keys(validarProducto(vacio, EXISTENTES)).sort())
-            .toEqual(["categoria", "codigo", "nombre", "precio", "stock"]);
+            .toEqual(["categoria", "codigo", "descripcion", "nombre", "precio", "stock", "stockCritico"]);
     });
 
     describe("código", () => {
         test("rechaza un código de menos de 3 caracteres", () => {
             expect(validarProducto(con({ codigo: "ab" }), EXISTENTES).codigo).toContain("al menos 3");
+        });
+
+        test("rechaza un código de más de 5 caracteres", () => {
+            expect(validarProducto(con({ codigo: "ABCDEF" }), EXISTENTES).codigo).toContain("5 caracteres");
+        });
+
+        test("acepta un código de exactamente 5 caracteres", () => {
+            expect(validarProducto(con({ codigo: "ABCDE" }), EXISTENTES).codigo).toBeUndefined();
         });
 
         test("rechaza un código que ya existe", () => {
@@ -41,20 +49,24 @@ describe("validarProducto", () => {
     });
 
     describe("nombre y descripción", () => {
-        test("rechaza un nombre de más de 100 caracteres", () => {
-            expect(validarProducto(con({ nombre: "a".repeat(101) }), EXISTENTES).nombre).toContain("100");
+        test("rechaza un nombre de más de 60 caracteres", () => {
+            expect(validarProducto(con({ nombre: "a".repeat(61) }), EXISTENTES).nombre).toContain("60");
         });
 
-        test("acepta un nombre de exactamente 100 caracteres", () => {
-            expect(validarProducto(con({ nombre: "a".repeat(100) }), EXISTENTES).nombre).toBeUndefined();
+        test("acepta un nombre de exactamente 60 caracteres", () => {
+            expect(validarProducto(con({ nombre: "a".repeat(60) }), EXISTENTES).nombre).toBeUndefined();
         });
 
-        test("rechaza una descripción de más de 500 caracteres", () => {
-            expect(validarProducto(con({ descripcion: "a".repeat(501) }), EXISTENTES).descripcion).toContain("500");
+        test("rechaza una descripción de más de 300 caracteres", () => {
+            expect(validarProducto(con({ descripcion: "a".repeat(301) }), EXISTENTES).descripcion).toContain("300");
         });
 
-        test("la descripción es opcional", () => {
-            expect(validarProducto(con({ descripcion: "" }), EXISTENTES).descripcion).toBeUndefined();
+        test("acepta una descripción de exactamente 300 caracteres", () => {
+            expect(validarProducto(con({ descripcion: "a".repeat(300) }), EXISTENTES).descripcion).toBeUndefined();
+        });
+
+        test("rechaza una descripción vacía", () => {
+            expect(validarProducto(con({ descripcion: "" }), EXISTENTES).descripcion).toBe("La descripción es requerida.");
         });
     });
 
@@ -81,8 +93,8 @@ describe("validarProducto", () => {
             expect(validarProducto(con({ stock: "-3" }), EXISTENTES).stock).toContain("entero");
         });
 
-        test("el stock crítico es opcional", () => {
-            expect(validarProducto(con({ stockCritico: "" }), EXISTENTES).stockCritico).toBeUndefined();
+        test("rechaza un stock crítico vacío", () => {
+            expect(validarProducto(con({ stockCritico: "" }), EXISTENTES).stockCritico).toBe("El stock crítico es requerido.");
         });
 
         test("rechaza un stock crítico inválido", () => {
@@ -98,7 +110,7 @@ describe("validarProducto", () => {
 
     test("si faltan campos en los datos no falla: los marca como obligatorios", () => {
         expect(Object.keys(validarProducto({})).sort())
-            .toEqual(["categoria", "codigo", "nombre", "precio", "stock"]);
+            .toEqual(["categoria", "codigo", "descripcion", "nombre", "precio", "stock", "stockCritico"]);
     });
 
     test("sin lista de productos existentes solo valida el formato del código", () => {

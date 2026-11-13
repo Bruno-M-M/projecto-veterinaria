@@ -11,6 +11,8 @@ function ProductoCard({ producto, alAgregar }) {
         setTimeout(() => setAgregado(false), 1200);
     }
 
+    const sinStock = producto.stock < 1;
+
     return (
         <Card className={producto.categoria}>
             <Card.Body>
@@ -24,9 +26,9 @@ function ProductoCard({ producto, alAgregar }) {
                 <Button
                     variant="outline-success"
                     onClick={manejarClick}
-                    disabled={agregado}
+                    disabled={agregado || sinStock}
                 >
-                    {agregado ? "Agregado" : "Agregar"}
+                    {sinStock ? "Sin stock" : agregado ? "Agregado" : "Agregar"}
                 </Button>
             </Card.Body>
         </Card>
