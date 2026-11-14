@@ -329,4 +329,72 @@ public class ProductoControllerTest {
                         .content("{\"cantidad\":5}"))
                 .andExpect(status().isForbidden());
     }
+
+    private static final String LOTE_VALIDO =
+            "{\"items\":[{\"productoId\":1,\"cantidad\":2},{\"productoId\":2,\"cantidad\":1}]}";
+
+    @Test
+    void descontarLote_comoCliente_responde200() throws Exception {
+        when(servicio.descontarLote(any())).thenReturn(List.of(respuesta()));
+
+        mockMvc.perform(post("/api/v1/productos/descontar-lote")
+                        .header("Authorization", bearer("CLIENTE"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(LOTE_VALIDO))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].codigo").value("ME001"));
+    }
+
+    @Test
+    void descontarLote_sinStock_responde409() throws Exception {
+        when(servicio.descontarLote(any()))
+                .thenThrow(new ConflictoException("Stock insuficiente de Amoxibay: quedan 1 unidades."));
+
+        mockMvc.perform(post("/api/v1/productos/descontar-lote")
+                        .header("Authorization", bearer("CLIENTE"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(LOTE_VALIDO))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.mensaje").value("Stock insuficiente de Amoxibay: quedan 1 unidades."));
+    }
+
+    @Test
+    void descontarLote_conListaVacia_responde400() throws Exception {
+        mockMvc.perform(post("/api/v1/productos/descontar-lote")
+                        .header("Authorization", bearer("CLIENTE"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"items\":[]}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errores.items").exists());
+    }
+
+    @Test
+    void descontarLote_conCantidadCero_responde400() throws Exception {
+        mockMvc.perform(post("/api/v1/productos/descontar-lote")
+                        .header("Authorization", bearer("CLIENTE"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"items\":[{\"productoId\":1,\"cantidad\":0}]}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void descontarLote_sinToken_responde401() throws Exception {
+        mockMvc.perform(post("/api/v1/productos/descontar-lote")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(LOTE_VALIDO))
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(servicio);
+    }
+
+    @Test
+    void descontarLote_comoVendedor_responde403() throws Exception {
+        mockMvc.perform(post("/api/v1/productos/descontar-lote")
+                        .header("Authorization", bearer("VENDEDOR"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(LOTE_VALIDO))
+                .andExpect(status().isForbidden());
+
+        verifyNoInteractions(servicio);
+    }
 }
