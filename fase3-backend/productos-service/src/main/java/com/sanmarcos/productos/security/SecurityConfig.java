@@ -47,9 +47,12 @@ public class SecurityConfig {
                         // La tienda es pública: cualquiera ve productos y categorías.
                         .requestMatchers(HttpMethod.GET, "/api/v1/productos/**", "/api/v1/categorias/**")
                                 .permitAll()
-                        // Ventas descuenta el stock con el token de quien compra.
+                        // Ventas descuenta el carrito completo con el token de quien compra.
+                        .requestMatchers(HttpMethod.POST, "/api/v1/productos/descontar-lote")
+                        .hasAnyRole("ADMINISTRADOR", "CLIENTE")
+                        // Descuento de un solo producto (mismos roles).
                         .requestMatchers(HttpMethod.POST, "/api/v1/productos/*/descontar")
-                                .hasAnyRole("ADMINISTRADOR", "CLIENTE")
+                        .hasAnyRole("ADMINISTRADOR", "CLIENTE")
                         // Crear, editar, eliminar y reponer: solo el administrador.
                         .requestMatchers("/api/v1/productos/**", "/api/v1/categorias/**")
                                 .hasRole("ADMINISTRADOR")

@@ -1,5 +1,6 @@
 package com.sanmarcos.productos.service;
 
+import com.sanmarcos.productos.dto.ItemDescuentoRequest;
 import com.sanmarcos.productos.dto.ProductoRequest;
 import com.sanmarcos.productos.dto.ProductoResponse;
 import com.sanmarcos.productos.exception.ConflictoException;
@@ -11,7 +12,10 @@ import com.sanmarcos.productos.repository.ProductoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Service
 public class ProductoService {
@@ -148,21 +152,48 @@ public class ProductoService {
     }
 
     @Transactional
-    public ProductoResponse descontarStock(Long id, Integer cantidad) {
-        Producto producto = getProductoParaActualizar(id);
-
+    private void validarDescuento(Producto producto, Integer cantidad) {
         if (!producto.getActivo()) {
             throw new ConflictoException("El producto " + producto.getNombre()
                     + " esta desactivado y no se puede vender.");
         }
-
         if (producto.getStock() < cantidad) {
             throw new ConflictoException("Stock insuficiente de " + producto.getNombre()
                     + ": quedan " + producto.getStock() + " unidades.");
         }
+    }
 
+    @Transactional
+    public ProductoResponse descontarStock(Long id, Integer cantidad) {
+        Producto producto = getProductoParaActualizar(id);
+        validarDescuento(producto, cantidad);
         producto.setStock(producto.getStock() - cantidad);
         return productoResponse(productos.save(producto));
+    }
+
+    @Transactional
+    public List<ProductoResponse> descontarLote(List<ItemDescuentoRequest> items) {
+        Map<Long, Integer> pedidos = new TreeMap<>();
+        for (ItemDescuentoRequest item : items) {
+            pedidos.merge(item.getProductoId(), item.getCantidad(), Integer::sum);
+        }
+
+        List<Producto> bloqueados = new ArrayList<>();
+        List<Integer> cantidades = new ArrayList<>();
+        for (Map.Entry<Long, Integer> pedido : pedidos.entrySet()) {
+            Producto producto = getProductoParaActualizar(pedido.getKey());
+            validarDescuento(producto, pedido.getValue());
+            bloqueados.add(producto);
+            cantidades.add(pedido.getValue());
+        }
+
+        List<ProductoResponse> resultado = new ArrayList<>();
+        for (int i = 0; i < bloqueados.size(); i++) {
+            Producto producto = bloqueados.get(i);
+            producto.setStock(producto.getStock() - cantidades.get(i));
+            resultado.add(productoResponse(productos.save(producto)));
+        }
+        return resultado;
     }
 
     @Transactional
