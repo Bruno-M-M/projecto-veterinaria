@@ -90,6 +90,7 @@ Con el servicio en marcha, Swagger queda en `http://localhost:8081/swagger-ui.ht
 | `DELETE /api/v1/productos/{id}` | Elimina un producto |
 | `POST /api/v1/productos/{id}/descontar` | Resta stock (409 si no alcanza o el producto está desactivado) |
 | `POST /api/v1/productos/{id}/reponer` | Suma stock (también en productos desactivados, para devolver el de una boleta anulada) |
+| `POST /api/v1/productos/descontar-lote` | Descuenta el stock de varios productos a la vez; si alguno no alcanza o está desactivado, no cambia ninguno (409). Roles: ADMINISTRADOR y CLIENTE |
 
 Los errores salen siempre con el mismo formato: `fecha`, `estado`, `error`, `mensaje`, `ruta` y, en los 400 de validación, `errores` con el detalle por campo.
 
