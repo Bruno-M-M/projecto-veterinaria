@@ -23,12 +23,12 @@ public class BoletaController {
         return ResponseEntity.ok(boletaService.listarTodas());
     }
 
-    @GetMapping("/api/v1/boletas/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<BoletaResponse> obtenerPorId(@PathVariable Integer id) {
         return ResponseEntity.ok(boletaService.obtenerPorId(id));
     }
 
-    @PostMapping("/api/v1/boletas")
+    @PostMapping
     public ResponseEntity<BoletaResponse> crear(@Valid @RequestBody BoletaRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(boletaService.crear(request));
     }
