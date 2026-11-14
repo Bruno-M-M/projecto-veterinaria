@@ -48,6 +48,8 @@ El servicio no guarda ninguna clave en el código: toda la configuración llega 
 | `WALLET_DIR` | Carpeta del wallet, escrita con barras `/` |
 | `DB_USER` | Usuario de la base |
 | `DB_PASSWORD` | Contraseña de la base |
+| `JWT_SECRET` | Clave para validar los tokens. Debe ser idéntica a la de auth-service (mínimo 32 caracteres) |
+| `CORS_ORIGINS` | Orígenes permitidos del frontend (opcional, por defecto `http://localhost:5173`) |
 
 **El wallet y las contraseñas nunca se suben al repositorio.** Se guardan fuera de la carpeta del proyecto.
 
