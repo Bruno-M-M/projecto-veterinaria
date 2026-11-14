@@ -40,7 +40,7 @@ public class BoletaService {
     }
 
     @Transactional
-    public BoletaResponse crear(BoletaRequest request) {
+    public BoletaResponse crear(BoletaRequest request, Integer usuarioId) {
         // 1. Armar los detalles con el precio actual y validar stock (todavía no se guarda nada)
         List<DetalleBoleta> detalles = new ArrayList<>();
         double total = 0;
@@ -65,7 +65,7 @@ public class BoletaService {
 
         // 2. Guardar la boleta
         Boleta boleta = new Boleta();
-        boleta.setUsuarioId(request.getUsuarioId());
+        boleta.setUsuarioId(usuarioId);
         boleta.setFecha(LocalDateTime.now());
         boleta.setTotal(total);
         boleta.setEstado(true); // PAGADA
