@@ -18,13 +18,7 @@ public class DatosIniciales {
     @Bean
     CommandLineRunner cargarRoles(RolRepository roles) {
         return args -> {
-            if (roles.findByNombre("VENDEDOR").isEmpty()) {
-                roles.findByNombre("TRABAJADOR").ifPresent(r -> {
-                    r.setNombre("VENDEDOR");
-                    roles.save(r);
-                });
-            }
-            for (String nombre : List.of("ADMINISTRADOR", "VENDEDOR", "CLIENTE")) {
+            for (String nombre : List.of("ADMINISTRADOR", "TRABAJADOR", "CLIENTE")) {
                 if (roles.findByNombre(nombre).isEmpty()) {
                     roles.save(new Rol(nombre));
                 }

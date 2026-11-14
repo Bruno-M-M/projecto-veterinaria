@@ -17,6 +17,6 @@ public record UsuarioEditarRequest(
         @Size(max = 60) String region,
         @Size(max = 60) String comuna,
         @NotBlank(message = "El rol es obligatorio")
-        @Pattern(regexp = "ADMINISTRADOR|VENDEDOR|CLIENTE",
-                message = "El rol debe ser ADMINISTRADOR, VENDEDOR o CLIENTE") String rol) {
+        @Pattern(regexp = "ADMINISTRADOR|TRABAJADOR|CLIENTE",
+                message = "El rol debe ser ADMINISTRADOR, TRABAJADOR o CLIENTE") String rol) {
 }
