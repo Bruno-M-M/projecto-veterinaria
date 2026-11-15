@@ -1,6 +1,7 @@
 package com.sanmarcos.productos.controller;
 
 import com.sanmarcos.productos.dto.CantidadRequest;
+import com.sanmarcos.productos.dto.LoteDescuentoRequest;
 import com.sanmarcos.productos.dto.ProductoRequest;
 import com.sanmarcos.productos.dto.ProductoResponse;
 import com.sanmarcos.productos.service.ProductoService;
@@ -71,5 +72,11 @@ public class ProductoController {
     @PostMapping("/{id}/reponer")
     public ProductoResponse reponer(@PathVariable Long id, @Valid @RequestBody CantidadRequest request) {
         return servicio.reponerStock(id, request.getCantidad());
+    }
+
+    @Operation(summary = "Descuenta el stock de varios productos a la vez: se descuenta todo o no cambia nada (409 si alguno no alcanza o esta desactivado)")
+    @PostMapping("/descontar-lote")
+    public List<ProductoResponse> descontarLote(@Valid @RequestBody LoteDescuentoRequest request) {
+        return servicio.descontarLote(request.getItems());
     }
 }
