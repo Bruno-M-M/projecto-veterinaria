@@ -1,7 +1,7 @@
 package com.sanmarcos.ventas.client;
 
-import java.util.List
-import com.sanmarcos.ventas.dto.ItemBoletaRequest
+import java.util.List;
+import com.sanmarcos.ventas.dto.ItemBoletaRequest;
 
 public interface ProductoClient {
 

@@ -41,20 +41,21 @@ public class SecurityConfig {
                 .authorizeHttpRequests(a -> a
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
                         // Comprar: cliente y administrador
                         .requestMatchers(HttpMethod.POST, "/api/v1/boletas")
                         .hasAnyRole("ADMINISTRADOR", "CLIENTE")
+
                         // Ver todas las órdenes: administrador y vendedor
                         .requestMatchers(HttpMethod.GET, "/api/v1/boletas", "/api/v1/boletas/*")
                         .hasAnyRole("ADMINISTRADOR", "VENDEDOR")
-                        // Ver todas las órdenes: administrador y vendedor
-                        .requestMatchers(HttpMethod.GET, "/api/v1/boletas", "/api/v1/boletas/*")
-                        .hasAnyRole("ADMINISTRADOR", "VENDEDOR")
+
                         // Anular una boleta devuelve el stock: solo el administrador
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/boletas/*/anular")
                         .hasRole("ADMINISTRADOR")
+
                         .anyRequest().authenticated())
-                        .anyRequest().authenticated())
+
                 .addFilterBefore(new JwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
