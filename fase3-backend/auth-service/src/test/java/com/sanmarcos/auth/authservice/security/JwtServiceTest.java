@@ -19,9 +19,9 @@ class JwtServiceTest {
 
     @Test
     void tokenDeAccesoLlevaIdRolYTipo() {
-        Jwt t = jwt.validar(jwt.generarAcceso(5L, "TRABAJADOR"), JwtService.TIPO_ACCESO);
+        Jwt t = jwt.validar(jwt.generarAcceso(5L, "VENDEDOR"), JwtService.TIPO_ACCESO);
         assertThat(t.getSubject()).isEqualTo("5");
-        assertThat(t.getClaimAsString("rol")).isEqualTo("TRABAJADOR");
+        assertThat(t.getClaimAsString("rol")).isEqualTo("VENDEDOR");
         assertThat(t.getClaimAsString("tipo")).isEqualTo("access");
     }
 
