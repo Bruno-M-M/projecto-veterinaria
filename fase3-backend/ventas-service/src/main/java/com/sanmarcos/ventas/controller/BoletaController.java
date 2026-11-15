@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -29,7 +30,11 @@ public class BoletaController {
     }
 
     @PostMapping
-    public ResponseEntity<BoletaResponse> crear(@Valid @RequestBody BoletaRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(boletaService.crear(request));
+    public ResponseEntity<BoletaResponse> crear(@Valid @RequestBody BoletaRequest request,
+                                                Principal principal) {
+        // El subject del token es el id del usuario que compra
+        Integer usuarioId = Integer.valueOf(principal.getName());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(boletaService.crear(request, usuarioId));
     }
 }

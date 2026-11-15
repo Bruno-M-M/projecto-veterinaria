@@ -47,6 +47,13 @@ public class SecurityConfig {
                         // Ver todas las órdenes: administrador y vendedor
                         .requestMatchers(HttpMethod.GET, "/api/v1/boletas", "/api/v1/boletas/*")
                         .hasAnyRole("ADMINISTRADOR", "VENDEDOR")
+                        // Ver todas las órdenes: administrador y vendedor
+                        .requestMatchers(HttpMethod.GET, "/api/v1/boletas", "/api/v1/boletas/*")
+                        .hasAnyRole("ADMINISTRADOR", "VENDEDOR")
+                        // Anular una boleta devuelve el stock: solo el administrador
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/boletas/*/anular")
+                        .hasRole("ADMINISTRADOR")
+                        .anyRequest().authenticated())
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
         return http.build();

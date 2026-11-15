@@ -3,6 +3,7 @@ package com.sanmarcos.ventas.service;
 import com.sanmarcos.ventas.client.ProductoClient;
 import com.sanmarcos.ventas.client.ProductoInfo;
 import com.sanmarcos.ventas.dto.*;
+import com.sanmarcos.ventas.exception.ConflictoException;
 import com.sanmarcos.ventas.exception.ResourceNotFoundException;
 import com.sanmarcos.ventas.exception.StockInsuficienteException;
 import com.sanmarcos.ventas.model.Boleta;
@@ -77,12 +78,48 @@ public class BoletaService {
         }
         List<DetalleBoleta> detallesGuardados = detalleRepository.saveAll(detalles);
 
-        // 4. Descontar el stock
-        for (ItemBoletaRequest item : request.getItems()) {
-            productoClient.descontarStock(item.getProductoId(), item.getCantidad());
-        }
+        // 4. Descontar el stock de todo el carrito de una vez (todo o nada).
+        // Va al final: si falla, la excepción deshace la boleta y no queda nada a medias.
+        productoClient.descontarLote(request.getItems());
 
         return mapToResponse(guardada, detallesGuardados);
+    }
+
+    @Transactional
+    public BoletaResponse anular(Integer id) {
+        Boleta boleta = boletaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Boleta no encontrada con ID: " + id));
+
+        if (!Boolean.TRUE.equals(boleta.getEstado())) {
+            throw new ConflictoException("La boleta " + id + " ya está anulada");
+        }
+
+        List<DetalleBoleta> detalles = detalleRepository.findByBoletaId(id);
+        boleta.setEstado(false); // ANULADA
+        boletaRepository.save(boleta);
+
+        // Devolver el stock de cada detalle. Si falla a medias, se vuelve a descontar
+        // lo ya repuesto para que el inventario no quede inflado, y el error deshace
+        // el cambio de estado.
+        List<DetalleBoleta> repuestos = new ArrayList<>();
+        try {
+            for (DetalleBoleta detalle : detalles) {
+                productoClient.reponerStock(detalle.getProductoId(), detalle.getCantidad());
+                repuestos.add(detalle);
+            }
+        } catch (RuntimeException e) {
+            for (DetalleBoleta detalle : repuestos) {
+                try {
+                    productoClient.descontarStock(detalle.getProductoId(), detalle.getCantidad());
+                } catch (RuntimeException ignorado) {
+                    // no debe tapar el error original; queda para revisión manual
+                }
+            }
+            throw e;
+        }
+
+        return mapToResponse(boleta, detalles);
     }
 
     private BoletaResponse mapToResponse(Boleta boleta, List<DetalleBoleta> detalles) {
@@ -101,7 +138,7 @@ public class BoletaService {
                 .usuarioId(boleta.getUsuarioId())
                 .fecha(boleta.getFecha())
                 .total(boleta.getTotal())
-                .estado(boleta.getEstado())
+                .estado(Boolean.TRUE.equals(boleta.getEstado()) ? "PAGADA" : "ANULADA")
                 .detalles(detallesResponse)
                 .build();
     }
