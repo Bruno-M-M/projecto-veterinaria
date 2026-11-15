@@ -4,10 +4,14 @@ import com.sanmarcos.ventas.exception.ResourceNotFoundException;
 import com.sanmarcos.ventas.exception.ServicioExternoException;
 import com.sanmarcos.ventas.exception.StockInsuficienteException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Map;
 
@@ -25,11 +29,28 @@ public class ProductoClientHttp implements ProductoClient {
                                   Integer stock, Boolean activo) {
     }
 
+    /** Header Authorization de la petición que llegó a ventas (null si no hay). */
+    private String tokenActual() {
+        RequestAttributes atributos = RequestContextHolder.getRequestAttributes();
+        if (atributos instanceof ServletRequestAttributes servlet) {
+            return servlet.getRequest().getHeader(HttpHeaders.AUTHORIZATION);
+        }
+        return null;
+    }
+
+    private void agregarToken(HttpHeaders headers) {
+        String token = tokenActual();
+        if (token != null) {
+            headers.set(HttpHeaders.AUTHORIZATION, token);
+        }
+    }
+
     @Override
     public ProductoInfo obtener(Integer productoId) {
         try {
             ProductoRemoto p = restClient.get()
                     .uri("/api/v1/productos/{id}", productoId)
+                    .headers(this::agregarToken)
                     .retrieve()
                     .onStatus(s -> s.value() == 404, (req, res) -> {
                         throw new ResourceNotFoundException(
@@ -61,6 +82,7 @@ public class ProductoClientHttp implements ProductoClient {
         try {
             restClient.post()
                     .uri("/api/v1/productos/{id}/descontar", productoId)
+                    .headers(this::agregarToken)
                     .body(Map.of("cantidad", cantidad))
                     .retrieve()
                     .onStatus(s -> s.value() == 404, (req, res) -> {
@@ -88,6 +110,7 @@ public class ProductoClientHttp implements ProductoClient {
         try {
             restClient.post()
                     .uri("/api/v1/productos/{id}/reponer", productoId)
+                    .headers(this::agregarToken)
                     .body(Map.of("cantidad", cantidad))
                     .retrieve()
                     .onStatus(HttpStatusCode::isError, (req, res) -> {
