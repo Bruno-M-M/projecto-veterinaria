@@ -46,6 +46,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/boletas")
                         .hasAnyRole("ADMINISTRADOR", "CLIENTE")
 
+                        // Mis compras: solo el cliente. Va ANTES de la regla de /api/v1/boletas/*
+                        .requestMatchers(HttpMethod.GET, "/api/v1/boletas/mias")
+                        .hasRole("CLIENTE")
+
+
+
                         // Ver todas las órdenes: administrador y vendedor
                         .requestMatchers(HttpMethod.GET, "/api/v1/boletas", "/api/v1/boletas/*")
                         .hasAnyRole("ADMINISTRADOR", "VENDEDOR")

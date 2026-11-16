@@ -26,6 +26,15 @@ public class BoletaController {
         return ResponseEntity.ok(boletaService.listarTodas());
     }
 
+    // Cliente: solo sus propias compras. El id del cliente es el subject del token
+    @GetMapping("/mias")
+    public ResponseEntity<List<BoletaResponse>> misCompras(Principal principal) {
+        Integer usuarioId = Integer.valueOf(principal.getName());
+        return ResponseEntity.ok(boletaService.listarDeUsuario(usuarioId));
+    }
+
+
+
     @GetMapping("/{id}")
     public ResponseEntity<BoletaResponse> obtenerPorId(@PathVariable Integer id) {
         return ResponseEntity.ok(boletaService.obtenerPorId(id));
