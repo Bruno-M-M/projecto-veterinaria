@@ -33,6 +33,13 @@ public class BoletaService {
     }
 
     @Transactional(readOnly = true)
+    public List<BoletaResponse> listarDeUsuario(Integer usuarioId) {
+        return boletaRepository.findByUsuarioId(usuarioId).stream()
+                .map(b -> mapToResponse(b, detalleRepository.findByBoletaId(b.getId())))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public BoletaResponse obtenerPorId(Integer id) {
         Boleta boleta = boletaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Boleta no encontrada con ID: " + id));
