@@ -39,6 +39,18 @@ public class GlobalExceptionHandler {
         return construir(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    // 409: la boleta ya estaba anulada u otro conflicto de estado
+    @ExceptionHandler(ConflictoException.class)
+    public ResponseEntity<ErrorResponse> manejarConflicto(ConflictoException ex) {
+        return construir(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    // 502: productos-service no responde o respondió con error
+    @ExceptionHandler(ServicioExternoException.class)
+    public ResponseEntity<ErrorResponse> manejarServicioExterno(ServicioExternoException ex) {
+        return construir(HttpStatus.BAD_GATEWAY, ex.getMessage());
+    }
+
     private ResponseEntity<ErrorResponse> construir(HttpStatus status, String mensaje) {
         return ResponseEntity.status(status)
                 .body(ErrorResponse.of(status.value(), status.getReasonPhrase(), mensaje));

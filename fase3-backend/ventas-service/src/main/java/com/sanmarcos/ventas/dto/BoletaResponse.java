@@ -17,6 +17,6 @@ public class BoletaResponse {
     private Integer usuarioId;
     private LocalDateTime fecha;
     private Double total;
-    private Boolean estado;   // true = PAGADA, false = ANULADA
+    private String estado;   // "PAGADA" o "ANULADA"
     private List<DetalleBoletaResponse> detalles;
 }
