@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/api/v1/boletas")
@@ -37,4 +39,10 @@ public class BoletaController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(boletaService.crear(request, usuarioId));
     }
+
+    @PatchMapping("/{id}/anular")
+    public ResponseEntity<BoletaResponse> anular(@PathVariable Integer id) {
+        return ResponseEntity.ok(boletaService.anular(id));
+    }
+
 }

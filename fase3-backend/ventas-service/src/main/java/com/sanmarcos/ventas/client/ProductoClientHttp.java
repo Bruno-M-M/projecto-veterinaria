@@ -12,6 +12,8 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import java.util.List
+import com.sanmarcos.ventas.dto.ItemBoletaRequest
 
 import java.util.Map;
 
@@ -100,6 +102,39 @@ public class ProductoClientHttp implements ProductoClient {
                     })
                     .toBodilessEntity();
 
+        } catch (RestClientException e) {
+            throw new ServicioExternoException("No se pudo conectar con productos-service");
+        }
+    }
+
+    @Override
+    public void descontarLote(List<ItemBoletaRequest> items) {
+        List<Map<String, Object>> cuerpoItems = items.stream()
+                .map(i -> Map.<String, Object>of(
+                        "productoId", i.getProductoId(),
+                        "cantidad", i.getCantidad()))
+                .toList();
+
+        try {
+            restClient.post()
+                    .uri("/api/v1/productos/descontar-lote")
+                    .headers(this::agregarToken)
+                    .body(Map.of("items", cuerpoItems))
+                    .retrieve()
+                    .onStatus(s -> s.value() == 404, (req, res) -> {
+                        throw new ResourceNotFoundException(
+                                "Alguno de los productos ya no existe");
+                    })
+                    .onStatus(s -> s.value() == 409, (req, res) -> {
+                        throw new StockInsuficienteException(
+                                "No se pudo descontar el stock "
+                                        + "(sin stock suficiente o producto desactivado)");
+                    })
+                    .onStatus(HttpStatusCode::isError, (req, res) -> {
+                        throw new ServicioExternoException(
+                                "productos-service respondió " + res.getStatusCode().value());
+                    })
+                    .toBodilessEntity();
         } catch (RestClientException e) {
             throw new ServicioExternoException("No se pudo conectar con productos-service");
         }
