@@ -1,6 +1,6 @@
 import axios from "axios";
-
-export const CLAVE_TOKEN = "token";
+import { CLAVE_TOKEN, guardarSesion, leerRefresh, limpiarSesion } from "./session";
+export { CLAVE_TOKEN };
 
 export function agregarToken(config) {
     const token = localStorage.getItem(CLAVE_TOKEN);
@@ -16,5 +16,34 @@ const clienteApi = axios.create({
 });
 
 clienteApi.interceptors.request.use(agregarToken);
+let renovacionEnCurso = null;
 
+clienteApi.interceptors.response.use(
+    (respuesta) => respuesta,
+    async (error) => {
+        const original = error.config;
+        const esRutaAuth = original?.url?.includes("/auth/");
+        if (error.response?.status !== 401 || !original || original._reintento || esRutaAuth) {
+            return Promise.reject(error);
+        }
+        original._reintento = true;
+        try {
+            const refreshToken = leerRefresh();
+            if (!refreshToken) throw error;
+            renovacionEnCurso =
+                renovacionEnCurso ||
+                axios
+                    .post(`${clienteApi.defaults.baseURL}/api/v1/auth/refresh`, { refreshToken })
+                    .finally(() => { renovacionEnCurso = null; });
+            const { data } = await renovacionEnCurso;
+            guardarSesion(data);
+            original.headers.Authorization = `Bearer ${data.accessToken}`;
+            return clienteApi(original);
+        } catch (e) {
+            limpiarSesion();
+            window.location.assign("/login");
+            return Promise.reject(e);
+        }
+    }
+);
 export default clienteApi;
