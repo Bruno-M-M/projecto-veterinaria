@@ -203,4 +203,33 @@ class BoletaControllerTest {
                         .header("Authorization", bearer("ADMINISTRADOR")))
                 .andExpect(status().isConflict());
     }
+
+
+    // ---------- mis compras ----------
+
+    @Test
+    void misCompras_comoCliente_responde200ConSusBoletas() throws Exception {
+        when(servicio.listarDeUsuario(7)).thenReturn(List.of(boleta("PAGADA")));
+
+        mvc.perform(get("/api/v1/boletas/mias").header("Authorization", bearer("CLIENTE")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(5));
+
+        verify(servicio).listarDeUsuario(7); // el 7 es el subject del token
+    }
+
+    @Test
+    void misCompras_comoVendedor_responde403() throws Exception {
+        mvc.perform(get("/api/v1/boletas/mias").header("Authorization", bearer("VENDEDOR")))
+                .andExpect(status().isForbidden());
+
+        verifyNoInteractions(servicio);
+    }
+
+    @Test
+    void misCompras_sinToken_responde401() throws Exception {
+        mvc.perform(get("/api/v1/boletas/mias")).andExpect(status().isUnauthorized());
+    }
+
+
 }
