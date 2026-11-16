@@ -3,7 +3,6 @@ package com.sanmarcos.ventas.client;
 import java.util.List;
 import com.sanmarcos.ventas.dto.ItemBoletaRequest;
 
-
 public interface ProductoClient {
 
     ProductoInfo obtener(Integer productoId);
@@ -12,4 +11,7 @@ public interface ProductoClient {
 
     /** Devuelve stock descontado si la compra falla a medias. */
     void reponerStock(Integer productoId, int cantidad);
+
+    void descontarLote(List<ItemBoletaRequest> items);
+
 }
