@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { vi } from "vitest";
-import Login from "./Login.jsx";
+import Login from "../pages/Login.jsx";
 import { iniciarSesion } from "../api/auth.js";
 
 vi.mock("../api/auth.js", () => ({ iniciarSesion: vi.fn() }));
