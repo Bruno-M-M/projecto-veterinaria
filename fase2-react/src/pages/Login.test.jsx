@@ -1,16 +1,21 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { vi } from "vitest";
 import Login from "./Login.jsx";
+import { iniciarSesion } from "../api/auth.js";
+
+vi.mock("../api/auth.js", () => ({ iniciarSesion: vi.fn() }));
 
 function renderLogin() {
   return render(
-    <MemoryRouter initialEntries={["/login"]}>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<h1>Panel admin</h1>} />
-        <Route path="/" element={<h1>Inicio</h1>} />
-      </Routes>
-    </MemoryRouter>
+      <MemoryRouter initialEntries={["/login"]}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<h1>Panel admin</h1>} />
+          <Route path="/vendedor/productos" element={<h1>Vista vendedor</h1>} />
+          <Route path="/" element={<h1>Inicio</h1>} />
+        </Routes>
+      </MemoryRouter>
   );
 }
 
@@ -23,39 +28,56 @@ function ingresar(email, clave) {
 describe("Login", () => {
   beforeEach(() => {
     localStorage.clear();
+    iniciarSesion.mockReset();
   });
 
-  it("admin válido guarda esAdmin y navega a /admin", () => {
+  it("un administrador entra al panel admin", async () => {
+    iniciarSesion.mockResolvedValue({ id: 1, rol: "ADMINISTRADOR" });
     renderLogin();
-    ingresar("admin@admin.cl", "123456");
+    ingresar("admin@gmail.com", "clave1234");
 
-    expect(localStorage.getItem("esAdmin")).toBe("true");
-    expect(JSON.parse(localStorage.getItem("usuario")).rol).toBe("admin");
-    expect(screen.getByText("Panel admin")).toBeTruthy();
+    expect(await screen.findByText("Panel admin")).toBeTruthy();
   });
 
-  it("usuario normal guarda esAdmin en false y navega al inicio", () => {
+  it("un vendedor va a su vista de productos", async () => {
+    iniciarSesion.mockResolvedValue({ id: 2, rol: "VENDEDOR" });
     renderLogin();
-    ingresar("usuario@gmail.com", "123456");
+    ingresar("vendedor@gmail.com", "clave1234");
 
-    expect(localStorage.getItem("esAdmin")).toBe("false");
-    expect(JSON.parse(localStorage.getItem("usuario")).rol).toBe("usuario");
-    expect(screen.getByText("Inicio")).toBeTruthy();
+    expect(await screen.findByText("Vista vendedor")).toBeTruthy();
   });
 
-  it("credenciales incorrectas muestran error y no guardan sesión", () => {
+  it("un cliente va al inicio", async () => {
+    iniciarSesion.mockResolvedValue({ id: 3, rol: "CLIENTE" });
+    renderLogin();
+    ingresar("cliente@gmail.com", "clave1234");
+
+    expect(await screen.findByText("Inicio")).toBeTruthy();
+  });
+
+  it("credenciales incorrectas (401) muestran el mensaje del servidor y no navegan", async () => {
+    iniciarSesion.mockRejectedValue({ response: { status: 401, data: { mensaje: "Correo o clave incorrectos" } } });
     renderLogin();
     ingresar("otro@gmail.com", "clave-mala");
 
-    expect(screen.getByText("Correo o contraseña incorrectos.")).toBeTruthy();
-    expect(localStorage.getItem("esAdmin")).toBeNull();
+    expect(await screen.findByText("Correo o clave incorrectos")).toBeTruthy();
     expect(screen.queryByText("Panel admin")).toBeNull();
   });
 
-  it("normaliza el correo a minúsculas antes de validar", () => {
+  it("si el servidor no responde muestra un error de conexión", async () => {
+    iniciarSesion.mockRejectedValue(new Error("Network Error"));
     renderLogin();
-    ingresar("ADMIN@ADMIN.CL", "123456");
+    ingresar("otro@gmail.com", "clave1234");
 
-    expect(screen.getByText("Panel admin")).toBeTruthy();
+    expect(await screen.findByText("No se pudo conectar con el servidor.")).toBeTruthy();
+  });
+
+  it("normaliza el correo a minúsculas antes de enviarlo", async () => {
+    iniciarSesion.mockResolvedValue({ id: 1, rol: "ADMINISTRADOR" });
+    renderLogin();
+    ingresar("ADMIN@GMAIL.COM", "clave1234");
+
+    await screen.findByText("Panel admin");
+    expect(iniciarSesion).toHaveBeenCalledWith("admin@gmail.com", "clave1234");
   });
 });

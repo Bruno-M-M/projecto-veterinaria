@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Form, Button, Alert, Row, Col } from 'react-bootstrap';
+import { registrarUsuario } from '../api/auth.js';
+import { mensajeDeError } from '../api/errores.js';
 
 // Datos de regiones y comunas
 const regionesData = [
@@ -69,7 +71,7 @@ const regionesData = [
   }
 ];
 
-// Función de validación de RUN (Módulo 11)[cite: 3]
+// Función de validación de RUN (Módulo 11)
 const validarRUN = (run) => {
   const regExp = /^[0-9]{7,8}[0-9kK]$/;
   if (!regExp.test(run)) return false;
@@ -100,8 +102,9 @@ const validarRUN = (run) => {
 };
 
 export default function FormularioRegistro() {
-  const [formData, setFormData] = useState({
-    nombre: '',
+  const estadoInicial = {
+    nombres: '',
+    apellidos: '',
     run: '',
     correo: '',
     correoConfirmar: '',
@@ -109,9 +112,11 @@ export default function FormularioRegistro() {
     comuna: '',
     password: '',
     passwordConfirmar: ''
-  });
+  };
 
+  const [formData, setFormData] = useState(estadoInicial);
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
+  const [enviando, setEnviando] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -124,10 +129,11 @@ export default function FormularioRegistro() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const nombre = formData.nombre.trim();
+    const nombres = formData.nombres.trim();
+    const apellidos = formData.apellidos.trim();
     const run = formData.run.trim();
     const correoReg = formData.correo.trim();
     const correoConf = formData.correoConfirmar.trim();
@@ -136,219 +142,239 @@ export default function FormularioRegistro() {
     const pwdReg = formData.password.trim();
     const pwdConf = formData.passwordConfirmar.trim();
 
-    // 1. Campos vacíos[cite: 3]
+    const error = (texto) => setMensaje({ tipo: 'danger', texto });
+
+    // 1. Campos vacíos
     if (
-      nombre === "" || run === "" || correoReg === "" || correoConf === "" ||
-      region === "" || comuna === "" || pwdReg === "" || pwdConf === ""
+        nombres === "" || apellidos === "" || run === "" || correoReg === "" || correoConf === "" ||
+        region === "" || comuna === "" || pwdReg === "" || pwdConf === ""
     ) {
-      setMensaje({ tipo: 'danger', texto: 'Debe completar todos los campos.' });
-      return;
+      return error('Debe completar todos los campos.');
     }
 
-    // 2. Validación de RUN[cite: 3]
+    // 2. Validación de RUN (Módulo 11)
     if (!validarRUN(run)) {
-      setMensaje({
-        tipo: 'danger',
-        texto: 'El RUN ingresado no es válido. Ingréselo sin puntos ni guión (ej: 12345678K).'
-      });
-      return;
+      return error('El RUN ingresado no es válido. Ingréselo sin puntos ni guión (ej: 12345678K).');
     }
 
-    // 3. Región y Comuna válidas[cite: 3]
+    // 3. Región y comuna válidas
     const objetoRegion = regionesData.find((item) => item.region === region);
     if (!objetoRegion || !objetoRegion.comunas.includes(comuna)) {
-      setMensaje({ tipo: 'danger', texto: 'Debe seleccionar una región y comuna válidas.' });
-      return;
+      return error('Debe seleccionar una región y comuna válidas.');
     }
 
-    // 4. Validación de nombre (longitud y solo letras/espacios)[cite: 3]
-    if (nombre.length > 100) {
-      setMensaje({ tipo: 'danger', texto: 'El nombre debe contener menos de 100 caracteres.' });
-      return;
+    // 4. Nombres y apellidos (el backend permite hasta 80 caracteres cada uno)
+    if (nombres.length > 80 || apellidos.length > 80) {
+      return error('Los nombres y los apellidos deben tener como máximo 80 caracteres.');
     }
 
     const soloLetrasYEspacios = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-    if (!soloLetrasYEspacios.test(nombre)) {
-      setMensaje({ tipo: 'danger', texto: 'El nombre solo debe contener caracteres alfabéticos y espacios.' });
-      return;
+    if (!soloLetrasYEspacios.test(nombres) || !soloLetrasYEspacios.test(apellidos)) {
+      return error('El nombre solo debe contener caracteres alfabéticos y espacios.');
     }
 
-    // 5. Validación de correo (longitud, dominio y confirmación)[cite: 3]
+    // 5. Correo (longitud, dominio y confirmación)
     if (correoReg.length > 100) {
-      setMensaje({ tipo: 'danger', texto: 'El correo electrónico debe contener un máximo de 100 caracteres.' });
-      return;
+      return error('El correo electrónico debe contener un máximo de 100 caracteres.');
     }
 
     const dominiosPermitidos = ["@duoc.cl", "@profesor.duoc.cl", "@gmail.com"];
     const esDominioValido = dominiosPermitidos.some((dominio) =>
-      correoReg.toLowerCase().endsWith(dominio)
+        correoReg.toLowerCase().endsWith(dominio)
     );
-
     if (!esDominioValido) {
-      setMensaje({
-        tipo: 'danger',
-        texto: 'El correo debe pertenecer a uno de los dominios permitidos: @duoc.cl, @profesor.duoc.cl o @gmail.com.'
-      });
-      return;
+      return error('El correo debe pertenecer a uno de los dominios permitidos: @duoc.cl, @profesor.duoc.cl o @gmail.com.');
     }
 
     if (correoReg !== correoConf) {
-      setMensaje({ tipo: 'danger', texto: 'Los correos electrónicos no coinciden.' });
-      return;
+      return error('Los correos electrónicos no coinciden.');
     }
 
-    // 6. Validación de contraseña (longitud y coincidencia)[cite: 3]
-    if (pwdReg.length < 4 || pwdReg.length > 10) {
-      setMensaje({ tipo: 'danger', texto: 'La contraseña debe tener entre 4 y 10 caracteres.' });
-      return;
+    // 6. Contraseña: el backend exige entre 8 y 72 caracteres
+    if (pwdReg.length < 8 || pwdReg.length > 72) {
+      return error('La contraseña debe tener entre 8 y 72 caracteres.');
     }
 
     if (pwdReg !== pwdConf) {
-      setMensaje({ tipo: 'danger', texto: 'Las contraseñas no coinciden.' });
-      return;
+      return error('Las contraseñas no coinciden.');
     }
 
-    // Registro exitoso[cite: 3]
-    setMensaje({ tipo: 'success', texto: '¡Registro exitoso!' });
+    // 7. Enviar a auth-service: POST /api/v1/auth/registro
+    setEnviando(true);
+    try {
+      await registrarUsuario({
+        run,
+        nombres,
+        apellidos,
+        correo: correoReg.toLowerCase(),
+        clave: pwdReg,
+        region,
+        comuna,
+      });
+      setMensaje({ tipo: 'success', texto: '¡Registro exitoso! Ya puedes iniciar sesión.' });
+      setFormData(estadoInicial);
+    } catch (err) {
+      error(mensajeDeError(err, 'No se pudo completar el registro.'));
+    } finally {
+      setEnviando(false);
+    }
   };
 
   const regionEncontrada = regionesData.find((item) => item.region === formData.region);
   const comunasDisponibles = regionEncontrada ? regionEncontrada.comunas : [];
 
   return (
-    <Form className="border rounded p-4 shadow bg-white" noValidate onSubmit={handleSubmit}>
-      <h2 className="text-center mb-4">Registro de usuario</h2>
+      <Form className="border rounded p-4 shadow bg-white" noValidate onSubmit={handleSubmit}>
+        <h2 className="text-center mb-4">Registro de usuario</h2>
 
-      <Form.Group className="mb-3" controlId="nombreRegistro">
-        <Form.Label>Nombre completo</Form.Label>
-        <Form.Control
-          type="text"
-          name="nombre"
-          placeholder="Ingrese su nombre"
-          value={formData.nombre}
-          onChange={handleChange}
-        />
-      </Form.Group>
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-3" controlId="nombreRegistro">
+              <Form.Label>Nombres</Form.Label>
+              <Form.Control
+                  type="text"
+                  name="nombres"
+                  placeholder="Ingrese sus nombres"
+                  maxLength={80}
+                  value={formData.nombres}
+                  onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-3" controlId="apellidoRegistro">
+              <Form.Label>Apellidos</Form.Label>
+              <Form.Control
+                  type="text"
+                  name="apellidos"
+                  placeholder="Ingrese sus apellidos"
+                  maxLength={80}
+                  value={formData.apellidos}
+                  onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
 
-      <Form.Group className="mb-3" controlId="runRegistro">
-        <Form.Label>RUN (sin puntos ni guión)</Form.Label>
-        <Form.Control
-          type="text"
-          name="run"
-          placeholder="12345678K"
-          maxLength={10}
-          value={formData.run}
-          onChange={handleChange}
-        />
-      </Form.Group>
-
-      <Row>
-        <Col md={6}>
-          <Form.Group className="mb-3" controlId="correoRegistro">
-            <Form.Label>Correo Electrónico</Form.Label>
-            <Form.Control
-              type="email"
-              name="correo"
-              placeholder="nombre@duoc.cl"
-              maxLength={100}
-              value={formData.correo}
+        <Form.Group className="mb-3" controlId="runRegistro">
+          <Form.Label>RUN (sin puntos ni guión)</Form.Label>
+          <Form.Control
+              type="text"
+              name="run"
+              placeholder="12345678K"
+              maxLength={10}
+              value={formData.run}
               onChange={handleChange}
-            />
-          </Form.Group>
-        </Col>
-        <Col md={6}>
-          <Form.Group className="mb-3" controlId="correoConfirmar">
-            <Form.Label>Confirmar Correo Electrónico</Form.Label>
-            <Form.Control
-              type="email"
-              name="correoConfirmar"
-              placeholder="nombre@duoc.cl"
-              maxLength={100}
-              value={formData.correoConfirmar}
-              onChange={handleChange}
-            />
-          </Form.Group>
-        </Col>
-      </Row>
+          />
+        </Form.Group>
 
-      <Row>
-        <Col md={6}>
-          <Form.Group className="mb-3" controlId="regionRegistro">
-            <Form.Label>Región</Form.Label>
-            <Form.Select
-              name="region"
-              value={formData.region}
-              onChange={handleChange}
-            >
-              <option value="" disabled>
-                Seleccione una región
-              </option>
-              {regionesData.map((item) => (
-                <option key={item.region} value={item.region}>
-                  {item.region}
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-3" controlId="correoRegistro">
+              <Form.Label>Correo Electrónico</Form.Label>
+              <Form.Control
+                  type="email"
+                  name="correo"
+                  placeholder="nombre@duoc.cl"
+                  maxLength={100}
+                  value={formData.correo}
+                  onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-3" controlId="correoConfirmar">
+              <Form.Label>Confirmar Correo Electrónico</Form.Label>
+              <Form.Control
+                  type="email"
+                  name="correoConfirmar"
+                  placeholder="nombre@duoc.cl"
+                  maxLength={100}
+                  value={formData.correoConfirmar}
+                  onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-3" controlId="regionRegistro">
+              <Form.Label>Región</Form.Label>
+              <Form.Select
+                  name="region"
+                  value={formData.region}
+                  onChange={handleChange}
+              >
+                <option value="" disabled>
+                  Seleccione una región
                 </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-        </Col>
-        <Col md={6}>
-          <Form.Group className="mb-3" controlId="comunaRegistro">
-            <Form.Label>Comuna</Form.Label>
-            <Form.Select
-              name="comuna"
-              disabled={!formData.region}
-              value={formData.comuna}
-              onChange={handleChange}
-            >
-              <option value="" disabled>
-                {formData.region ? 'Seleccione una comuna' : 'Seleccione primero una región'}
-              </option>
-              {comunasDisponibles.map((comuna) => (
-                <option key={comuna} value={comuna}>
-                  {comuna}
+                {regionesData.map((item) => (
+                    <option key={item.region} value={item.region}>
+                      {item.region}
+                    </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-3" controlId="comunaRegistro">
+              <Form.Label>Comuna</Form.Label>
+              <Form.Select
+                  name="comuna"
+                  disabled={!formData.region}
+                  value={formData.comuna}
+                  onChange={handleChange}
+              >
+                <option value="" disabled>
+                  {formData.region ? 'Seleccione una comuna' : 'Seleccione primero una región'}
                 </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-        </Col>
-      </Row>
+                {comunasDisponibles.map((comuna) => (
+                    <option key={comuna} value={comuna}>
+                      {comuna}
+                    </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+        </Row>
 
-      <Row>
-        <Col md={6}>
-          <Form.Group className="mb-3" controlId="password">
-            <Form.Label>Contraseña</Form.Label>
-            <Form.Control
-              type="password"
-              name="password"
-              placeholder="Contraseña"
-              value={formData.password}
-              onChange={handleChange}
-            />
-          </Form.Group>
-        </Col>
-        <Col md={6}>
-          <Form.Group className="mb-3" controlId="passwordConfirmar">
-            <Form.Label>Confirmar Contraseña</Form.Label>
-            <Form.Control
-              type="password"
-              name="passwordConfirmar"
-              placeholder="Contraseña"
-              value={formData.passwordConfirmar}
-              onChange={handleChange}
-            />
-          </Form.Group>
-        </Col>
-      </Row>
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-3" controlId="password">
+              <Form.Label>Contraseña</Form.Label>
+              <Form.Control
+                  type="password"
+                  name="password"
+                  placeholder="Contraseña"
+                  value={formData.password}
+                  onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-3" controlId="passwordConfirmar">
+              <Form.Label>Confirmar Contraseña</Form.Label>
+              <Form.Control
+                  type="password"
+                  name="passwordConfirmar"
+                  placeholder="Contraseña"
+                  value={formData.passwordConfirmar}
+                  onChange={handleChange}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
 
-      <Button type="submit" variant="primary" className="w-100 mt-2">
-        Registrar
-      </Button>
+        <Button type="submit" variant="primary" className="w-100 mt-2" disabled={enviando}>
+          {enviando ? 'Registrando...' : 'Registrar'}
+        </Button>
 
-      {mensaje.texto && (
-        <Alert variant={mensaje.tipo} className="mt-4">
-          {mensaje.texto}
-        </Alert>
-      )}
-    </Form>
+        {mensaje.texto && (
+            <Alert variant={mensaje.tipo} className="mt-4">
+              {mensaje.texto}
+            </Alert>
+        )}
+      </Form>
   );
 }

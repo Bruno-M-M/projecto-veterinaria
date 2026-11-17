@@ -16,7 +16,8 @@ describe('Registro Page Component', () => {
     render(<Registro />);
 
     expect(screen.getByRole('heading', { name: /registro de usuario/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/nombre completo/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^nombres$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^apellidos$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/run/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^correo electrónico$/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /registrar/i })).toBeInTheDocument();

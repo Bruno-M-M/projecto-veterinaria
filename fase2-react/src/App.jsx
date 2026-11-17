@@ -1,7 +1,10 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
 import AdminLayout from "./components/admin/Adminlayout.jsx";
 import RutaAdmin from "./components/RutaAdmin.jsx";
+import RutaVendedor from "./components/RutaVendedor.jsx";
+import RutaCliente from "./components/RutaCliente.jsx";
+import RutaTienda from "./components/RutaTienda.jsx";
 import Home from "./pages/Home.jsx";
 import Productos from "./pages/Productos.jsx";
 import DetalleProducto from "./pages/DetalleProducto.jsx";
@@ -24,7 +27,6 @@ import Usuarios from "./pages/admin/Usuarios.jsx";
 // Páginas que aún no se migran
 const paginasPendientes = [
     ["servicios", "Servicios"],
-    ["checkout", "Checkout"],
 ];
 
 function App() {
@@ -32,20 +34,46 @@ function App() {
         <BrowserRouter>
             <Routes>
                 <Route element={<Layout />}>
-                    <Route index element={<Home />} />
-                    <Route path="productos" element={<Productos />} />
-                    <Route path="producto/:codigo" element={<DetalleProducto />} />
-                    <Route path="carrito" element={<Carrito />} />
-                    <Route path="nosotros" element={<Nosotros />} />
-                    <Route path="blogs" element={<Blogs />} />
-                    <Route path="blogs/:id" element={<BlogDetalle />} />
-                    <Route path="contacto" element={<Contacto />} />
+                    {/* Tienda: pública, pero el vendedor es redirigido a su vista */}
+                    <Route element={<RutaTienda />}>
+                        <Route index element={<Home />} />
+                        <Route path="productos" element={<Productos />} />
+                        <Route path="producto/:codigo" element={<DetalleProducto />} />
+                        <Route path="carrito" element={<Carrito />} />
+                        <Route path="nosotros" element={<Nosotros />} />
+                        <Route path="blogs" element={<Blogs />} />
+                        <Route path="blogs/:id" element={<BlogDetalle />} />
+                        <Route path="contacto" element={<Contacto />} />
+                        {paginasPendientes.map(([ruta, titulo]) => (
+                            <Route key={ruta} path={ruta} element={<Pendiente titulo={titulo} />} />
+                        ))}
+                        <Route
+                            path="checkout"
+                            element={
+                                <RutaCliente>
+                                    <Pendiente titulo="Checkout" />
+                                </RutaCliente>
+                            }
+                        />
+                    </Route>
+
                     <Route path="login" element={<Login />} />
                     <Route path="registro" element={<Registro />} />
 
-                    {paginasPendientes.map(([ruta, titulo]) => (
-                        <Route key={ruta} path={ruta} element={<Pendiente titulo={titulo} />} />
-                    ))}
+                    {/* Vista del vendedor: solo productos y órdenes */}
+                    <Route
+                        path="vendedor"
+                        element={
+                            <RutaVendedor>
+                                <Outlet />
+                            </RutaVendedor>
+                        }
+                    >
+                        {/* Bruno (productos) y Alfonso (órdenes) reemplazan estas páginas */}
+                        <Route path="productos" element={<Pendiente titulo="Productos" />} />
+                        <Route path="ordenes" element={<Pendiente titulo="Órdenes" />} />
+                    </Route>
+
                     <Route path="*" element={<NoEncontrado />} />
                 </Route>
 

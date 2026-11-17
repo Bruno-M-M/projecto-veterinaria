@@ -88,7 +88,7 @@ class SeguridadApiTest {
 
     @Test
     void usuariosComoTrabajadorDa403() throws Exception {
-        mvc.perform(get("/api/v1/usuarios").header("Authorization", bearer("TRABAJADOR")))
+        mvc.perform(get("/api/v1/usuarios").header("Authorization", bearer("VENDEDOR")))
                 .andExpect(status().isForbidden());
     }
 
