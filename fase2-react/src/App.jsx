@@ -23,6 +23,8 @@ import AdminProductos from "./pages/admin/AdminProductos.jsx";
 import NuevoProducto from "./pages/admin/NuevoProducto.jsx";
 import EditarProducto from "./pages/admin/EditarProducto.jsx";
 import Usuarios from "./pages/admin/Usuarios.jsx";
+import Checkout from "./pages/Checkout.jsx";
+import BoletaDetalle from "./pages/BoletaDetalle.jsx";
 
 // Páginas que aún no se migran
 const paginasPendientes = [
@@ -47,14 +49,8 @@ function App() {
                         {paginasPendientes.map(([ruta, titulo]) => (
                             <Route key={ruta} path={ruta} element={<Pendiente titulo={titulo} />} />
                         ))}
-                        <Route
-                            path="checkout"
-                            element={
-                                <RutaCliente>
-                                    <Pendiente titulo="Checkout" />
-                                </RutaCliente>
-                            }
-                        />
+                        <Route path="checkout" element={ <RutaCliente> <Checkout /> </RutaCliente> } />
+                        <Route path="checkout/boleta/:id" element={ <RutaCliente> <BoletaDetalle /> </RutaCliente> } />
                     </Route>
 
                     <Route path="login" element={<Login />} />
