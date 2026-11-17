@@ -49,6 +49,9 @@ function AdminLayout() {
                     <NavLink to="/admin/usuarios" className={claseLink} onClick={cerrarMenu}>
                         <i className="bi bi-people me-2"></i>Usuarios
                     </NavLink>
+                    <NavLink to="/admin/ordenes" className={claseLink} onClick={cerrarMenu}>
+                        <i className="bi bi-receipt me-2"></i>Órdenes
+                    </NavLink>
 
                     <hr className="text-secondary" />
 
