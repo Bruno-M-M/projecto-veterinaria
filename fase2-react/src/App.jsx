@@ -25,6 +25,9 @@ import EditarProducto from "./pages/admin/EditarProducto.jsx";
 import Usuarios from "./pages/admin/Usuarios.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import BoletaDetalle from "./pages/BoletaDetalle.jsx";
+import OrdenesLista from "./pages/ordenes/OrdenesLista.jsx";
+import VendedorProductos from "./pages/vendedor/VendedorProductos.jsx";
+import VendedorProductoDetalle from "./pages/vendedor/VendedorProductoDetalle.jsx";
 
 // Páginas que aún no se migran
 const paginasPendientes = [
@@ -66,8 +69,10 @@ function App() {
                         }
                     >
                         {/* Bruno (productos) y Alfonso (órdenes) reemplazan estas páginas */}
-                        <Route path="productos" element={<Pendiente titulo="Productos" />} />
-                        <Route path="ordenes" element={<Pendiente titulo="Órdenes" />} />
+                        <Route path="productos" element={<VendedorProductos />} />
+                        <Route path="productos/:codigo" element={<VendedorProductoDetalle />} />
+                        <Route path="ordenes" element={<OrdenesLista rutaBase="/vendedor/ordenes" />} />
+                        <Route path="ordenes/:id" element={<BoletaDetalle />} />
                     </Route>
 
                     <Route path="*" element={<NoEncontrado />} />
@@ -87,6 +92,8 @@ function App() {
                     <Route path="productos/nuevo" element={<NuevoProducto />} />
                     <Route path="productos/:codigo/editar" element={<EditarProducto />} />
                     <Route path="usuarios" element={<Usuarios />} />
+                    <Route path="ordenes" element={<OrdenesLista rutaBase="/admin/ordenes" puedeAnular />} />
+                    <Route path="ordenes/:id" element={<BoletaDetalle />} />
                 </Route>
             </Routes>
         </BrowserRouter>
