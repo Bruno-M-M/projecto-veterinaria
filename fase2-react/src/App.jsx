@@ -28,6 +28,9 @@ import BoletaDetalle from "./pages/BoletaDetalle.jsx";
 import OrdenesLista from "./pages/ordenes/OrdenesLista.jsx";
 import VendedorProductos from "./pages/vendedor/VendedorProductos.jsx";
 import VendedorProductoDetalle from "./pages/vendedor/VendedorProductoDetalle.jsx";
+import MisCompras from "./pages/MisCompras.jsx";
+import RutaRol from "./components/RutaRol.jsx";
+import { ROL_CLIENTE } from "./api/session.js";
 
 // Páginas que aún no se migran
 const paginasPendientes = [
@@ -54,6 +57,7 @@ function App() {
                         ))}
                         <Route path="checkout" element={ <RutaCliente> <Checkout /> </RutaCliente> } />
                         <Route path="checkout/boleta/:id" element={ <RutaCliente> <BoletaDetalle /> </RutaCliente> } />
+                        <Route path="mis-compras" element={ <RutaRol roles={[ROL_CLIENTE]}> <MisCompras /> </RutaRol> } />
                     </Route>
 
                     <Route path="login" element={<Login />} />
