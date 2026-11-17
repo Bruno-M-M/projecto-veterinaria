@@ -2,6 +2,11 @@ import axios from "axios";
 import { CLAVE_TOKEN, guardarSesion, leerRefresh, limpiarSesion } from "./session";
 export { CLAVE_TOKEN };
 
+// Separado para poder probarlo: en jsdom no se puede reemplazar window.location.
+export const navegacion = {
+    irALogin: () => window.location.assign("/login"),
+};
+
 export function agregarToken(config) {
     const token = localStorage.getItem(CLAVE_TOKEN);
     if (token) {
@@ -41,7 +46,7 @@ clienteApi.interceptors.response.use(
             return clienteApi(original);
         } catch (e) {
             limpiarSesion();
-            window.location.assign("/login");
+            navegacion.irALogin();
             return Promise.reject(e);
         }
     }

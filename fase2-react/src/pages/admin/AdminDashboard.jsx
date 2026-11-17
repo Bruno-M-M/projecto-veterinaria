@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { cerrarSesion as limpiarSesion } from "../../api/auth.js";
+import { leerUsuario } from "../../api/session.js";
 
 const CLAVE_STORAGE = "comentarios_san_marcos";
 
 export default function AdminDashboard() {
     const [comentarios, setComentarios] = useState([]);
+    const usuario = leerUsuario();
 
-    // Cargar los comentarios guardados en localStorage
     useEffect(() => {
         try {
             const guardados = localStorage.getItem(CLAVE_STORAGE);
@@ -18,10 +20,8 @@ export default function AdminDashboard() {
         }
     }, []);
 
-    // Función para cerrar sesión de admin
     const cerrarSesion = () => {
-        localStorage.removeItem("esAdmin");
-        localStorage.removeItem("usuario");
+        limpiarSesion(); // borra token, refreshToken y usuario
         window.location.href = "/login";
     };
 
@@ -32,7 +32,7 @@ export default function AdminDashboard() {
                 <div>
                     <h1 className="h2 mb-1">Panel de Administración</h1>
                     <p className="text-muted mb-0">
-                        Bienvenido de vuelta. Gestiona la información de la veterinaria aquí.
+                        Bienvenido de vuelta{usuario?.nombres ? `, ${usuario.nombres}` : ""}. Gestiona la información de la veterinaria aquí.
                     </p>
                 </div>
                 <button onClick={cerrarSesion} className="btn btn-outline-danger">

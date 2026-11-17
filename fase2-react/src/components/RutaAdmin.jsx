@@ -1,11 +1,6 @@
-import { Navigate } from "react-router-dom";
+import RutaRol from "./RutaRol.jsx";
+import { ROL_ADMIN } from "../api/session.js";
 
 export default function RutaAdmin({ children }) {
-    const esAdmin = localStorage.getItem("esAdmin") === "true";
-
-    if (!esAdmin) {
-        return <Navigate to="/login" replace />;
-    }
-
-    return children;
+    return <RutaRol roles={[ROL_ADMIN]}>{children}</RutaRol>;
 }
