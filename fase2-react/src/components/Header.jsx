@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "react-bootstrap";
 import { useCarrito } from "../context/CarritoContext.jsx";
 import { cerrarSesion } from "../api/auth.js";
-import { haySesion, leerUsuario, ROL_ADMIN, ROL_VENDEDOR } from "../api/session.js";
+import { haySesion, leerUsuario, ROL_ADMIN, ROL_CLIENTE, ROL_VENDEDOR } from "../api/session.js";
 
 function Header() {
     const { cantidadTotal } = useCarrito();
@@ -63,6 +63,9 @@ function Header() {
                             <>
                                 {usuario.rol === ROL_ADMIN && (
                                     <li><NavLink to="/admin">Panel admin</NavLink></li>
+                                )}
+                                {usuario.rol === ROL_CLIENTE && (
+                                    <li><NavLink to="/mis-compras">Mis compras</NavLink></li>
                                 )}
                                 <li><span className="nav-usuario">Hola, {usuario.nombres}</span></li>
                                 <li>
