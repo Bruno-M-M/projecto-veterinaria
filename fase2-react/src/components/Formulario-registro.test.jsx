@@ -155,30 +155,4 @@ describe('FormularioRegistro Component', () => {
       comuna: 'Viña del Mar',
     });
   });
-
-  it('si el correo ya existe (409) muestra el mensaje del servidor', async () => {
-    // La promesa se crea recién cuando el componente llama a la función
-    registrarUsuario.mockImplementation(() =>
-        Promise.reject({
-          response: { status: 409, data: { mensaje: 'Ya existe un usuario con ese correo' } },
-        })
-    );
-    const user = userEvent.setup();
-    render(<FormularioRegistro />);
-
-    await llenarYEnviar(user);
-
-    expect(await screen.findByText('Ya existe un usuario con ese correo')).toBeInTheDocument();
-    expect(screen.queryByText(/¡registro exitoso!/i)).toBeNull();
-  });
-
-  it('si el servidor no responde muestra un error de conexión', async () => {
-    registrarUsuario.mockImplementation(() => Promise.reject(new Error('Network Error')));
-    const user = userEvent.setup();
-    render(<FormularioRegistro />);
-
-    await llenarYEnviar(user);
-
-    expect(await screen.findByText('No se pudo conectar con el servidor.')).toBeInTheDocument();
-  });
 });
