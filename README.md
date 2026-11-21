@@ -20,7 +20,7 @@ Los servicios `auth-service` (usuarios, login y JWT, puerto 8082) y `ventas-serv
 Navegador (React, :5173)
       |  /api/v1/...
       v
-Proxy (Vite en desarrollo; Nginx previsto en producción)
+Proxy (Vite en desarrollo; Nginx en producción)
       |--> productos-service  :8081
       |--> auth-service       :8082
       '--> ventas-service     :8083
@@ -118,6 +118,16 @@ El catálogo y el panel de administración necesitan `productos-service` en marc
 
 La colección de Postman se puede importar también en la aplicación. Crea y elimina sus propios datos de prueba, y la variable `baseUrl` permite apuntarla a otro servidor.
 
+## Despliegue en AWS
+
+El sistema corre en una instancia EC2 con Docker Compose: Nginx en el puerto 80 sirve el frontend y redirige `/api/v1/...` a los tres servicios, que se conectan a Oracle Autonomous Database con wallet.
+
+- Configuración: [`fase3-backend/docker-compose.yml`](fase3-backend/docker-compose.yml) y [`fase3-backend/nginx/default.conf`](fase3-backend/nginx/default.conf).
+- Actualizar el servidor: [`fase3-backend/actualizar.sh`](fase3-backend/actualizar.sh). Verificar que todo responde: [`fase3-backend/prueba-humo.sh`](fase3-backend/prueba-humo.sh).
+- Paso a paso con capturas: [`docs/evidencia/despliegue.md`](docs/evidencia/despliegue.md).
+
+Las claves (`.env`), la wallet y la llave `.pem` no están en el repositorio.
+
 ## Estado del proyecto
 
 | Parte | Responsable | Estado |
@@ -127,7 +137,7 @@ La colección de Postman se puede importar también en la aplicación. Crea y el
 | `auth-service`: usuarios, login, JWT y roles | Benjamín | En desarrollo |
 | `ventas-service`: boletas y descuento de stock | Alfonso | En desarrollo |
 | Seguridad (401 y 403) y restricciones por rol en el frontend | Equipo | Pendiente del módulo de autenticación |
-| Despliegue en AWS | Equipo | Pendiente |
+| Despliegue en AWS (Docker Compose, Nginx y Oracle) | Bruno | Desplegado. Ver [la evidencia](docs/evidencia/despliegue.md) |
 
 ## Flujo de trabajo
 
