@@ -29,3 +29,10 @@ coverage/
 *.env
 wallet/
 Wallet_*
+# Despliegue
+*.pem
+fase3-backend/.env
+
+# Despliegue
+*.pem
+fase3-backend/.env

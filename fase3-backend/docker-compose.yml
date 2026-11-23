@@ -1,0 +1,48 @@
+x-servicio-java: &servicio-java
+  env_file: .env
+  environment:
+    WALLET_DIR: /wallet
+    JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=60"
+  volumes:
+    - /opt/wallet:/wallet:ro
+  mem_limit: 640m
+  restart: unless-stopped
+
+services:
+  productos-service:
+    <<: *servicio-java
+    build: ./productos-service
+    ports:
+      - "127.0.0.1:8081:8081"
+
+  auth-service:
+    <<: *servicio-java
+    build: ./auth-service
+    ports:
+      - "127.0.0.1:8082:8082"
+
+  ventas-service:
+    <<: *servicio-java
+    build: ./ventas-service
+    environment:
+      WALLET_DIR: /wallet
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=60"
+      PRODUCTOS_URL: http://productos-service:8081
+    ports:
+      - "127.0.0.1:8083:8083"
+    depends_on:
+      - productos-service
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend:/usr/share/nginx/html:ro
+    mem_limit: 64m
+    restart: unless-stopped
+    depends_on:
+      - productos-service
+      - auth-service
+      - ventas-service
